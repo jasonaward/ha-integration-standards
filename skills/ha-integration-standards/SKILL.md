@@ -20,6 +20,8 @@ available, read it and follow it over this summary, which is for version **0.1.0
 
 ## When working on a project
 
+Every rule is a must unless marked _should_.
+
 1. Look for `.standard-version` in the repository.
    - Present: apply that version. If the standard is newer, say so and offer to update.
    - Absent: the project hasn't adopted it. Don't apply it or point out differences
@@ -68,18 +70,19 @@ another company's product; README title "<name> for Home Assistant".
   Same number in manifest, library `__version__`, changelog heading; tag adds `v`.
   Never reuse or lower a version.
 - Changelog: newest first, `## 0.1.0b1 (2026-11-19, beta)`, user-facing bullets.
-- Releases: GitHub releases built by CI from the tag, notes = the changelog section (versions checked, tests, zip,
-  provenance attestation); betas marked pre-release. A retired project says so and its repository is archived. A broken release: fix
-  forward fast;
-  the changelog marks it and says how to go back with HACS **Redownload**.
+- Releases: GitHub releases built by CI from the tag (versions checked, tests, zip,
+  provenance attestation), with that version's changelog section as release notes;
+  betas marked pre-release. A broken release: fix forward fast; the changelog marks it
+  and says how to go back with HACS **Redownload**. A retired project says so in its
+  README and its repository is archived.
 
 ## README (section 5)
 
 Order: title and introduction; notices (hobby project aiming for enterprise quality,
 use at your own risk, work in progress; unofficial, using the vendor's service the way
 its app does, maybe not permitted by its terms, user responsible for their account; no
-warranty or liability); Use cases; Supported devices (Tested, Likely to work) and Unsupported
-devices; Prerequisites; Installation (HACS with the two My Home Assistant buttons,
+warranty or liability); Use cases; Supported devices (Tested, Likely to work) and
+Unsupported devices; Prerequisites; Installation (HACS with the two My Home Assistant buttons,
 Manual); Configuration; Configuration options; Supported functionality; Actions,
 Triggers, Conditions if any; Examples; Data updates; Load on <service>; Security and
 privacy; Safety if any; Known limitations; Troubleshooting (ending Reporting a problem);
@@ -98,7 +101,6 @@ sentence case, bold UI with `>` between steps, "select", `-` lists, no "e.g.").
 - Logs: never secrets at any level (tested); IDs shortened; no emails.
 - Repository and history: no real personal data; `.gitignore` excludes diagnostics
   downloads, traffic recordings, logs and secrets files.
-- Rules are musts unless marked _should_.
 - Security: `SECURITY.md` and private reporting on; fixed vulnerabilities published as
   GitHub security advisories; actions pinned to SHAs and kept current by Dependabot;
   read-only workflow permissions; CodeQL, Dependabot alerts, secret scanning with push
