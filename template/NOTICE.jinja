@@ -1,0 +1,13 @@
+{{ name }} for Home Assistant
+Copyright {{ year }} Jason Ward and contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE). Distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+The authors and contributors accept no liability for any damage arising from its use.
+{% if company %}
+{{ trademarks }} are trademarks of {{ company }}. This project is not affiliated with,
+endorsed by, or supported by {{ company }}. The names are used only to identify the
+{{ device }} the software works with.
+{% endif %}
+The icon and logo in custom_components/{{ domain }}/brand/ are original artwork for this
+project{% if company %}, not {{ company }}'s{% endif %}.

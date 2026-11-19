@@ -1,0 +1,26 @@
+"""Shared fixtures."""
+
+from __future__ import annotations
+
+import pytest
+
+from custom_components.{{ domain }}.const import DOMAIN
+
+
+@pytest.fixture(autouse=True)
+def no_deprecated_use(caplog):
+    """Fail any test in which Home Assistant reports a deprecated use by this integration."""
+    yield
+    reports = [
+        record.getMessage()
+        for record in caplog.get_records("call")
+        if record.name == "homeassistant.helpers.frame"
+        and f"integration '{DOMAIN}'" in record.getMessage()
+    ]
+    assert not reports, reports
+
+
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations):
+    """Load custom_components/ in every test."""
+    yield

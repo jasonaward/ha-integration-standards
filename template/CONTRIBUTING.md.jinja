@@ -1,0 +1,66 @@
+# Contributing
+
+Thanks for helping. Bug reports, results from other models, ideas, and pull requests are
+all welcome. This project follows a [Code of Conduct](CODE_OF_CONDUCT.md) and the
+maintainer's [integration standard](https://github.com/jasonaward/ha-integration-standards).
+
+## Reporting
+
+### Bugs
+
+Use the [bug report form](https://github.com/jasonaward/{{ repo }}/issues/new/choose).
+Attach a diagnostics download: on the device page, select the three dots menu >
+**Download diagnostics**. Private fields are left out, but look it over before posting.
+
+If asked for a debug log:
+
+1. On the integration's page, select the three dots menu > **Enable debug logging**.
+2. Make the problem happen again, and note the time.
+3. Select **Disable debug logging**; Home Assistant offers the log as a download.
+4. Look it over before posting, and remove anything you'd rather not share.
+
+### A new or untested model
+
+Use the bug report form, tick **This is a new or untested model**, and include:
+
+- the {{ device }}'s model and firmware (on the device page);
+- a diagnostics download;
+- which entities show sensible values, and which don't;
+- which actions worked;
+- anything wrong or missing compared with the {{ company or "manufacturer" }}'s app.
+
+### Security
+
+Report vulnerabilities privately, as described in [SECURITY.md](SECURITY.md), never in a
+public issue.
+
+## Development
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install pytest-homeassistant-custom-component -r requirements_test.txt ruff mypy
+pytest -q --cov=custom_components --cov-report=json
+python scripts/check_coverage.py coverage.json 95
+ruff check . && ruff format --check .
+mypy
+```
+
+The rules that matter most:
+
+- Never log passwords, tokens, or full device IDs.
+- No new dependencies without discussion first.
+- Be gentle with the {{ device }}{% if company %} and {{ company }}'s service{% endif %}: no new polling without a limit.
+- User-facing text goes in `strings.json` and `translations/en.json`.
+- Keep every module above 95% test coverage, and add a line to `CHANGELOG.md`.
+- Use made-up values in tests and examples, never real emails, device IDs, serial
+  numbers, or MAC addresses.
+
+## AI-assisted contributions
+
+They're welcome. Say so in the pull request. You're responsible for what you submit and
+should understand it; it gets the same review and tests as any other change.
+
+## License
+
+By contributing, you agree that your contribution is licensed under the Apache License
+2.0 (section 5 of the license).

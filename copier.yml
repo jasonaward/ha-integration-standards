@@ -1,0 +1,92 @@
+# Copier template for a new Home Assistant integration that follows the standard.
+#
+#   copier copy gh:jasonaward/ha-integration-standards ha-<domain>
+#   copier update            # later, to bring in changes to the template
+#
+# It creates the repository files, documentation, workflows, and a minimal working
+# integration with tests. Add the brand images and the integration itself, then fill in
+# each README section.
+
+_subdirectory: template
+_min_copier_version: "9.4.0"
+_answers_file: .copier-answers.yml
+_templates_suffix: .jinja
+
+domain:
+  type: str
+  help: "Integration domain: lowercase letters, numbers, and underscores (for example acme_heater)"
+  validator: >-
+    {% if not (domain | regex_search('^[a-z][a-z0-9_]*[a-z0-9]$')) %}Use lowercase letters, numbers, and underscores.{% endif %}
+
+product:
+  type: str
+  help: The product's name as users know it, without "(unofficial)" (for example Acme Heater)
+
+company:
+  type: str
+  default: ""
+  help: The company whose product it is; leave empty for your own product
+
+trademarks:
+  type: str
+  default: "{{ product }}"
+  help: "Trademarks to name in the notices (for example Acme and HeatPro)"
+  when: "{{ company != '' }}"
+
+device:
+  type: str
+  default: device
+  help: What the user has, singular (for example heater)
+
+equipment:
+  type: str
+  default: "{{ device }}s"
+  help: What could be damaged, for the disclaimer (for example heaters, pool equipment)
+
+description:
+  type: str
+  help: One sentence on what the product is (for the README introduction)
+
+iot_class:
+  type: str
+  default: cloud_polling
+  choices: [cloud_polling, cloud_push, local_polling, local_push, calculated]
+
+integration_type:
+  type: str
+  default: hub
+  choices: [hub, device, service]
+
+minimum_ha:
+  type: str
+  default: 2026.3.0
+  help: Minimum Home Assistant version
+  validator: >-
+    {% if not (minimum_ha | regex_search('^20[0-9][0-9][.][0-9]{1,2}[.][0-9]+$')) %}Use a version like 2025.1.0.{% endif %}
+
+first_date:
+  type: str
+  help: Date of the first changelog entry (YYYY-MM-DD)
+  validator: >-
+    {% if not (first_date | regex_search('^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$')) %}Use YYYY-MM-DD.{% endif %}
+
+public_email:
+  type: str
+  default: opensource@jasonward.com
+  help: The public email for the code of conduct and security reports
+
+# Worked out from the answers; not asked.
+name:
+  type: str
+  default: "{{ product }}{% if company %} (unofficial){% endif %}"
+  when: false
+
+repo:
+  type: str
+  default: "ha-{{ domain | replace('_', '-') }}"
+  when: false
+
+year:
+  type: str
+  default: "{{ first_date[:4] }}"
+  when: false

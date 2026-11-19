@@ -1,0 +1,25 @@
+"""{{ name }} for Home Assistant."""
+
+from __future__ import annotations
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
+
+# TODO: the platforms this integration sets up.
+PLATFORMS: list[Platform] = []
+
+# TODO: the type of runtime_data, such as a DataUpdateCoordinator.
+type {{ domain.split('_') | map('capitalize') | join }}ConfigEntry = ConfigEntry[None]
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: {{ domain.split('_') | map('capitalize') | join }}ConfigEntry) -> bool:
+    """Set up from a config entry."""
+    entry.runtime_data = None
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: {{ domain.split('_') | map('capitalize') | join }}ConfigEntry) -> bool:
+    """Unload a config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

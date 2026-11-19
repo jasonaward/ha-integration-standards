@@ -1,0 +1,40 @@
+name: Standard check
+
+# Called from each project that follows the standard:
+#
+#   jobs:
+#     standard:
+#       uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@<commit SHA>
+#
+# It runs the check from the standard version in the project's .standard-version.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Integration standard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Standard version
+        id: version
+        run: |
+          version="$(tr -d '[:space:]' < .standard-version)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::.standard-version isn't a version"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: jasonaward/ha-integration-standards
+          ref: v${{ steps.version.outputs.version }}
+          path: .standard
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Check
+        run: python .standard/check/check_standard.py .

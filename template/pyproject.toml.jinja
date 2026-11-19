@@ -1,0 +1,31 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+# E/F/W: errors, I: imports, B: bugbear, UP: modern syntax, SIM: simplify,
+# ASYNC: async pitfalls, S: security (bandit)
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "ASYNC", "S"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests use assert and fake passwords by design.
+"tests/*" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_unreachable = true
+show_error_codes = true
+files = ["custom_components/{{ domain }}"]
+
+[tool.coverage.report]
+# Type-checking imports and imports for older Home Assistant versions aren't run
+# on the newest version, which the per-module check measures.
+exclude_also = ["if TYPE_CHECKING:", "except ImportError:"]

@@ -1,0 +1,13 @@
+name: Standard
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  standard:
+    # The standard's shared check, from the version in .standard-version.
+    uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@{{ _copier_conf.vcs_ref_hash }}

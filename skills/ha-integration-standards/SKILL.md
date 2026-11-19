@@ -11,12 +11,13 @@ be used at your own risk.**
 A public, opt-in standard for jasonaward's hobby Home Assistant integrations: projects by
 a long-time software developer turned engineering leader, built to learn when and how
 AI-assisted and AI-written code can be applied well, held to the bar of large-scale and
-critical systems, and shared through HACS as custom repositories with no warranty. It
+critical systems, and shared as custom repositories (Home Assistant's Marketplace from
+2026.11, HACS before) with no warranty. It
 covers what users and contributors see, not how code is written. It describes the
 maintainer's intended practices; it isn't a warranty or commitment to users.
 
 The full text is `STANDARD.md` in `jasonaward/ha-integration-standards`. When it's
-available, read it and follow it over this summary, which is for version **0.1.0**.
+available, read it and follow it over this summary, which is for version **0.2.0**.
 
 ## When working on a project
 
@@ -29,12 +30,14 @@ Every rule is a must unless marked _should_.
 2. Before finishing a change, check it against the rules below for what it touches, and
    fix or mention anything that doesn't meet them.
 3. Work out version numbers from section 4; never invent one.
+   Run the shared check (`check/check_standard.py` in the standard's repository) when
+   it's available, and start new projects from its Copier template.
 4. Never put real personal data in code, tests, docs, examples or commits. No traffic
    recordings or instructions for intercepting a vendor's app.
 5. Public text describes aims and process, not guarantees ("designed to", "aims for"),
    unless a test checks the statement.
 
-## Home Assistant and HACS first (section 2)
+## Home Assistant, the Marketplace and HACS first (section 2)
 
 - `quality_scale.yaml`: every rule `done`, `todo` or `exempt` (with a comment). Aim
   Platinum; floor Gold for releases (betas may have `todo`); a Platinum rule is `exempt`
@@ -42,16 +45,21 @@ Every rule is a must unless marked _should_.
 - README follows Home Assistant's page structure and style guide (section 5).
 - Manifest: `codeowners` `@jasonaward`; documentation and issue links to
   `github.com/jasonaward/ha-<domain>`; `loggers`; pinned `requirements` or `[]`.
-- HACS: public repository with description and topics (`home-assistant`, `hacs`,
-  `home-assistant-integration`, the product); GitHub releases; `hacs.json` with `name`,
-  `homeassistant`, `render_readme`, `zip_release` and `<domain>.zip`.
+- Marketplace and HACS (same catalog, `hacs.json` and layout): public repository with
+  description and topics (`home-assistant`, `hacs`, `home-assistant-integration`, the
+  product); GitHub releases; `hacs.json` with `name`, `homeassistant` (the minimum),
+  `render_readme`, `zip_release` and `<domain>.zip`.
 - Brand images in `brand/`: PNG, trimmed, transparent; icon 256 and 512; logo shortest
-  side 256 and 512; `dark_` versions; shared flat style; no other company's marks; SVG
+  side 128 to 256 and 256 to 512; `dark_` versions; shared flat style; no other company's marks; SVG
   sources in `docs/brand/`.
 - CI: tests on the minimum and latest Home Assistant, coverage above 95% per module,
-  ruff (with security rules), `mypy --strict`, hassfest, HACS validation, CodeQL, the
-  standard's check. Minimum Home Assistant version raised only in a MINOR, never to a
-  release under 3 months old without need.
+  failing when Home Assistant reports a deprecated use by the project's code; ruff (with
+  security rules), `mypy --strict`, hassfest, HACS validation, CodeQL, the standard's
+  check; _should_ a weekly run against the upcoming beta.
+- Minimum Home Assistant version (`hacs.json` and Prerequisites): chosen for reach and
+  upkeep, _should_ be no older than about 12 months and not under 3 months old (check
+  Home Assistant's analytics); code for older versions kept small, labeled with the
+  versions it's for, and tested; raising it is a MINOR with **Action needed:**.
 
 ## Identity (section 3)
 
@@ -69,11 +77,13 @@ another company's product; README title "<name> for Home Assistant".
 - First release `0.1.0b1`; betas raise `bN`; a good beta is released without the suffix.
   Same number in manifest, library `__version__`, changelog heading; tag adds `v`.
   Never reuse or lower a version.
-- Changelog: newest first, `## 0.1.0b1 (2026-11-19, beta)`, user-facing bullets.
+- Changelog: newest first, `## 0.1.0b1 (2026-11-19, beta)`, user-facing bullets;
+  **Action needed:** first in its section (it's shown as the update's release notes).
 - Releases: GitHub releases built by CI from the tag (versions checked, tests, zip,
   provenance attestation), with that version's changelog section as release notes;
-  betas marked pre-release. A broken release: fix forward fast; the changelog marks it
-  and says how to go back with HACS **Redownload**. A retired project says so in its
+  betas marked pre-release (the Marketplace's **Pre-release** switch, or HACS's beta
+  setting). A broken release: fix forward fast; the changelog marks it and says how to go
+  back (the repository's menu in the Marketplace, **Redownload** in HACS). A retired project says so in its
   README and its repository is archived.
 
 ## README (section 5)
@@ -82,8 +92,8 @@ Order: title and introduction; notices (hobby project aiming for enterprise qual
 use at your own risk, work in progress; unofficial, using the vendor's service the way
 its app does, maybe not permitted by its terms, user responsible for their account; no
 warranty or liability); Use cases; Supported devices (Tested, Likely to work) and
-Unsupported devices; Prerequisites; Installation (HACS with the two My Home Assistant buttons,
-Manual); Configuration; Configuration options; Supported functionality; Actions,
+Unsupported devices; Prerequisites; Installation (Marketplace or HACS, with the two My Home Assistant
+buttons and steps for both, then Manual); Configuration; Configuration options; Supported functionality; Actions,
 Triggers, Conditions if any; Examples; Data updates; Load on <service>; Security and
 privacy; Safety if any; Known limitations; Troubleshooting (ending Reporting a problem);
 Removing the integration (Troubleshooting and Likely to work link CONTRIBUTING's
