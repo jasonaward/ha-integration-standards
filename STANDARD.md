@@ -135,7 +135,8 @@ all accept.
   the next beta starts from the next version (`0.2.0b1` or `0.1.1b1`).
 - **One number.** `manifest.json` `version`, the bundled library's `__version__` and the
   changelog heading match; the tag adds `v`. Each project versions independently.
-- A published version is never reused, changed or lowered.
+- A version is published when its tag exists. A published version is never reused,
+  changed or lowered.
 - **Adopting the standard in an existing project.** One not yet published for others
   restarts as a new repository at `0.1.0b1`, from one commit that meets the standard; its
   old repository becomes a private archive (`ha-<domain>-archive`). Existing installs are
@@ -157,12 +158,13 @@ section: the Marketplace and HACS show the section as the update's release notes
    by hand. The workflow checks that tag, manifest, library and changelog agree, runs the
    tests, builds `<domain>.zip`, attests its build provenance, and attaches it. The
    release notes are that version's changelog section.
-2. Betas are marked **pre-release**, so the Marketplace offers them only to users who
-   turned on the repository's **Pre-release** switch, and HACS only to users who turned on
-   beta versions.
+2. Betas are marked **pre-release**. The Marketplace offers them only to users who select
+   **Include pre-releases** in the repository's menu, or who choose one under **Install
+   another version**; HACS only to users who turned on beta versions.
 3. **A broken release** is fixed by a newer one as soon as possible. Until then, the
-   changelog marks the broken version and says how to go back: choose the previous
-   version from the repository's menu in the Marketplace, or **Redownload** in HACS.
+   changelog marks the broken version and says how to go back: in the Marketplace,
+   restore a backup, as Home Assistant advises; in HACS, **Redownload** and pick the
+   previous version.
 
 ## 5. README
 
@@ -457,7 +459,8 @@ Code adapted from other projects must have a compatible license and be credited 
    configuration, the changelog's order, `quality_scale.yaml`, and brand images.
    **Should** rules produce warnings.
 2. **This standard's version** follows section 4.1, without betas, and stays at `0.x`:
-   MINOR for a new or stricter rule or new standard text, PATCH for wording.
+   MINOR for a new or stricter rule or new standard text, PATCH for wording. A version is
+   published when its tag (`v0.2.0`) exists; until then it may still be corrected.
 3. The standard, its template, its check and its skill change together, with a changelog
    entry. Projects adopt a new version through a reviewed update, then change
    `.standard-version`; until then, their checks keep using the version they follow.
