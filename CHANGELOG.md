@@ -15,6 +15,11 @@ tests, and `.standard-version` as below, and pin the check to this version.
   project's own code.
 - **Changelog**: **Action needed:** comes first in its version's section, since it's
   shown as the update's release notes.
+- **Published means tagged**: a version, of a project or of this standard, is published
+  when its tag exists, and can't change after that.
+- **Marketplace wording checked against Home Assistant 2026.11**: **Add from link** and
+  **GitHub link** for adding a repository; **Include pre-releases** or **Install another
+  version** for betas; restoring a backup to go back, as Home Assistant advises.
 - **Shared check** (`check/check_standard.py`) and a reusable workflow that runs it in
   each project's CI, from the version in its `.standard-version`.
 - **Copier template** that creates a project meeting the standard, with a minimal working

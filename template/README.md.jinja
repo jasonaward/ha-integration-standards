@@ -60,8 +60,9 @@ The first button opens this repository in the Marketplace or HACS, whichever you
 Without the buttons, on Home Assistant 2026.11 and later:
 
 1. Go to **Settings** > **Marketplace** and select **Add from link**.
-2. Enter `https://github.com/jasonaward/{{ repo }}`. Adding a repository that isn't in
-   the Marketplace's catalog asks you to connect a GitHub account first.
+2. In **GitHub link**, enter `https://github.com/jasonaward/{{ repo }}` and select
+   **Add**. Adding a repository that isn't in the Marketplace's catalog asks you to
+   connect a GitHub account first.
 3. Open **{{ name }}** and install it.
 4. Follow [Configuration](#configuration). Updates need a restart; the first install
    doesn't.
@@ -76,8 +77,9 @@ On earlier versions, with HACS:
 **Betas.** While this integration is in beta, every release is a pre-release, which you
 only get once you've asked for them:
 
-- **Marketplace**: go to **Settings** > **Devices & services** > **Marketplace**, open the
-  device for this repository, enable its **Pre-release** entity, and turn the switch on.
+- **Marketplace**: on this repository's page, select the three dots menu > **Install
+  another version** and choose the beta. To get later betas as updates, select **Include
+  pre-releases** in the same menu.
 - **HACS**: turn on **Show beta versions** for the repository.
 
 ### Manual

@@ -81,9 +81,11 @@ another company's product; README title "<name> for Home Assistant".
   **Action needed:** first in its section (it's shown as the update's release notes).
 - Releases: GitHub releases built by CI from the tag (versions checked, tests, zip,
   provenance attestation), with that version's changelog section as release notes;
-  betas marked pre-release (the Marketplace's **Pre-release** switch, or HACS's beta
-  setting). A broken release: fix forward fast; the changelog marks it and says how to go
-  back (the repository's menu in the Marketplace, **Redownload** in HACS). A retired project says so in its
+  betas marked pre-release (the Marketplace: **Include pre-releases** in the repository's
+  menu, or **Install another version**; HACS: its beta setting). A broken release: fix
+  forward fast; the changelog marks it and says how to go back (restore a backup in the
+  Marketplace, as Home Assistant advises; **Redownload** in HACS). A version is published
+  when its tag exists, and never changes after that. A retired project says so in its
   README and its repository is archived.
 
 ## README (section 5)
