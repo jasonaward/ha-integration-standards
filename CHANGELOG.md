@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.0 (2026-11-19)
+
+**Action needed:** projects on 0.1.0 update their README's install steps, changelog order,
+tests, and `.standard-version` as below, and pin the check to this version.
+
+- **Marketplace**: Home Assistant 2026.11 builds HACS in as the Marketplace. Projects
+  follow its publishing guides as well as HACS's; the README's `### Marketplace or HACS`
+  covers both, including how to get betas with the Marketplace's **Pre-release** switch.
+- **Minimum Home Assistant version**: chosen for reach and upkeep, no older than about 12
+  months and not under 3 months old, checking Home Assistant's analytics; code for older
+  versions is kept small, labeled, and tested.
+- **Deprecations**: tests fail when Home Assistant reports a deprecated use by the
+  project's own code.
+- **Changelog**: **Action needed:** comes first in its version's section, since it's
+  shown as the update's release notes.
+- **Shared check** (`check/check_standard.py`) and a reusable workflow that runs it in
+  each project's CI, from the version in its `.standard-version`.
+- **Copier template** that creates a project meeting the standard, with a minimal working
+  integration and tests; `copier update` brings in later template changes.
+
 ## 0.1.0 (2026-11-19)
 
 - **First version** of the standard, in nine sections: why; Home Assistant and HACS

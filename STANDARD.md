@@ -1,6 +1,6 @@
 # Home Assistant integration standard
 
-**Version 0.1.0** · Owner: [@jasonaward](https://github.com/jasonaward)
+**Version 0.2.0** · Owner: [@jasonaward](https://github.com/jasonaward)
 
 How a hobby Home Assistant integration that adopts this standard is documented,
 versioned, released and presented. It covers what users and contributors see, not how
@@ -30,9 +30,10 @@ They aim for the bar of large-scale and critical systems: standards set and foll
 thorough testing, and security and privacy by design. Part of the purpose is to see
 whether AI-written code can meet or exceed that bar, and what it takes to get there.
 
-They're shared through HACS as custom repositories. There's no plan to submit them to
-Home Assistant or HACS's default list; if that changes, a project would go through their
-review process at the time.
+They're shared as custom repositories, installed through Home Assistant's Marketplace
+(built in from Home Assistant 2026.11) or, on older versions, HACS. There's no plan to
+submit them to Home Assistant or to the Marketplace's catalog; if that changes, a project
+would go through their review process at the time.
 
 **Opt-in.** The standard applies only to a project with a `.standard-version` file in its
 repository, giving the version it follows. That file is the only record of adoption.
@@ -42,10 +43,12 @@ following it by removing the file and saying so in its README.
 **Public**, so contributors can read the rules their changes are checked against, and so
 public integration repositories can run its shared check.
 
-## 2. Home Assistant and HACS first
+## 2. Home Assistant, the Marketplace and HACS first
 
-Home Assistant's and HACS's own rules come first; this standard doesn't restate them and
-never contradicts them. Section 6 adds only what they don't cover.
+Home Assistant's own rules come first, including those of its Marketplace and of HACS,
+which the Marketplace grew out of and shares its catalog, `hacs.json` and layout with.
+This standard doesn't restate them and never contradicts them. Section 6 adds only what
+they don't cover.
 
 1. **Quality scale.** `custom_components/<domain>/quality_scale.yaml` lists every rule of
    Home Assistant's
@@ -64,11 +67,13 @@ never contradicts them. Section 6 adds only what they don't cover.
    with: `codeowners` `["@jasonaward"]`; `documentation`
    `https://github.com/jasonaward/ha-<domain>`; `issue_tracker` the same with `/issues`;
    `loggers` naming the integration's own loggers; `requirements` pinned exactly, or `[]`.
-4. **HACS.** The repository follows HACS's
+4. **Marketplace and HACS.** The repository follows the Marketplace's
+   [publishing guides](https://contributors.home-assistant.io/marketplace/) and HACS's
    [publishing requirements](https://hacs.xyz/docs/publish/start). In addition: topics
    include `home-assistant`, `hacs`, `home-assistant-integration` and the product;
-   releases are zipped (`hacs.json`: `zip_release: true`, `filename: "<domain>.zip"`,
-   `render_readme: true`, and `homeassistant` set to the minimum version).
+   releases are zipped (`hacs.json`: `name`, `zip_release: true`,
+   `filename: "<domain>.zip"`, `render_readme: true`, and `homeassistant` set to the
+   minimum version, 7).
 5. **Brand images** follow Home Assistant's
    [brand image rules](https://developers.home-assistant.io/docs/core/integration/brand_images),
    in `custom_components/<domain>/brand/`, with `dark_` versions. In addition: one flat
@@ -77,13 +82,21 @@ never contradicts them. Section 6 adds only what they don't cover.
    The shared style and font are _should_.
 6. **Tests and checks.** Home Assistant's `test-coverage` rule (above 95% per module),
    hassfest and HACS validation run in CI. In addition: tests on both the minimum and the
-   latest Home Assistant, with branch coverage; `ruff check` with its security rules and
+   latest Home Assistant, with branch coverage, that fail when Home Assistant reports a
+   deprecated use by the project's own code; `ruff check` with its security rules and
    `ruff format --check`; `mypy --strict`; CodeQL; and this standard's check (section 8).
    _Should_: a weekly scheduled run against Home Assistant's upcoming beta, to catch
    breaking changes before users meet them.
-7. **Minimum Home Assistant version.** Declared in `hacs.json`. Raising it is a MINOR
-   version with a changelog note. _Should_: it isn't raised to a release less than 3 months
-   old unless a needed feature requires it.
+7. **Minimum Home Assistant version.** Declared in `hacs.json` as `homeassistant`, where
+   the Marketplace uses it to offer each user the newest release that supports their
+   version, and in the README's Prerequisites. It's chosen for reach and upkeep:
+   - _Should_: no older than about 12 months, and never a release less than 3 months old
+     unless a needed feature requires it. The share of installations on each version, in
+     [Home Assistant's analytics](https://analytics.home-assistant.io/), is checked when
+     choosing.
+   - Code that exists only for versions older than the latest is kept small, says in a
+     comment which versions it's for, and is covered by the tests on the minimum version.
+   - Raising it is a MINOR version with an **Action needed:** note.
 
 ## 3. Identity and naming
 
@@ -126,7 +139,7 @@ all accept.
 - **Adopting the standard in an existing project.** One not yet published for others
   restarts as a new repository at `0.1.0b1`, from one commit that meets the standard; its
   old repository becomes a private archive (`ha-<domain>-archive`). Existing installs are
-  removed in HACS and installed again; config entries and entity IDs are kept as long as
+  removed in the Marketplace or HACS and installed again; config entries and entity IDs are kept as long as
   the domain doesn't change. A project already published adopts the standard with its
   next version instead.
 
@@ -135,7 +148,8 @@ all accept.
 `CHANGELOG.md`, newest first, headed `## 0.1.0b1 (2026-11-19, beta)` or
 `## 0.2.0 (2027-01-10)`, with an optional `## Unreleased` at the top. Written for users:
 one bullet per change, starting with the bolded thing it affects. Anything users must act
-on starts with **Action needed:** and says what to do.
+on starts with **Action needed:**, says what to do, and comes first in its version's
+section: the Marketplace and HACS show the section as the update's release notes.
 
 ### 4.3 Releases
 
@@ -143,11 +157,12 @@ on starts with **Action needed:** and says what to do.
    by hand. The workflow checks that tag, manifest, library and changelog agree, runs the
    tests, builds `<domain>.zip`, attests its build provenance, and attaches it. The
    release notes are that version's changelog section.
-2. Betas are marked **pre-release**, so HACS offers them only to users who turned on beta
-   versions.
+2. Betas are marked **pre-release**, so the Marketplace offers them only to users who
+   turned on the repository's **Pre-release** switch, and HACS only to users who turned on
+   beta versions.
 3. **A broken release** is fixed by a newer one as soon as possible. Until then, the
-   changelog marks the broken version and says how to go back: in HACS, **Redownload**
-   and pick the previous version.
+   changelog marks the broken version and says how to go back: choose the previous
+   version from the repository's menu in the Marketplace, or **Redownload** in HACS.
 
 ## 5. README
 
@@ -164,8 +179,10 @@ present. Where a heading carries out a quality-scale rule, the rule is in bracke
    `## Unsupported devices` (5.3; `docs-supported-devices`).
 5. `## Prerequisites`: an account, the device set up in the vendor's app, the minimum
    Home Assistant version (`docs-installation-instructions`).
-6. `## Installation`: `### HACS`, starting with the install buttons (5.7), then
-   `### Manual`; _if applicable_ `### Switching from <other integration>`.
+6. `## Installation`: `### Marketplace or HACS`, starting with the install buttons
+   (5.7), then the steps for the Marketplace (Home Assistant 2026.11 and later) and for
+   HACS (earlier versions), including how to get betas; then `### Manual`; _if
+   applicable_ `### Switching from <other integration>`.
 7. `## Configuration`: setup steps and the values asked for
    (`docs-installation-parameters`).
 8. `## Configuration options`: each option, its default and effect, plus
@@ -289,8 +306,9 @@ repository is archived (read-only).
 
 ### 5.7 Install buttons
 
-The HACS steps start with two [My Home Assistant](https://my.home-assistant.io/)
-buttons, as HACS recommends, followed by numbered steps for users without them.
+The Marketplace or HACS steps start with two [My Home Assistant](https://my.home-assistant.io/)
+buttons, followed by numbered steps for users without them. The first button opens the
+repository in the Marketplace or HACS, whichever the user has.
 _Should_: no other badges.
 
 > _Standard text_
@@ -436,8 +454,8 @@ Code adapted from other projects must have a compatible license and be credited 
    follows, fails when a **must** rule isn't met: required files, matching versions,
    README sections and standard text, manifest and `hacs.json` fields, license and
    `NOTICE`, privacy patterns, `.gitignore`, pinned actions and requirements, Dependabot
-   configuration,
-   `quality_scale.yaml`, and brand images. **Should** rules produce warnings.
+   configuration, the changelog's order, `quality_scale.yaml`, and brand images.
+   **Should** rules produce warnings.
 2. **This standard's version** follows section 4.1, without betas, and stays at `0.x`:
    MINOR for a new or stricter rule or new standard text, PATCH for wording.
 3. The standard, its template, its check and its skill change together, with a changelog
@@ -453,9 +471,14 @@ Code adapted from other projects must have a compatible license and be credited 
   [integration page structure](https://developers.home-assistant.io/docs/documenting/integration-docs-examples),
   [manifest](https://developers.home-assistant.io/docs/creating_integration_manifest),
   [brand images](https://developers.home-assistant.io/docs/core/integration/brand_images).
+- Marketplace: [publishing guides](https://contributors.home-assistant.io/marketplace/),
+  [releases](https://contributors.home-assistant.io/marketplace/guides/releases/),
+  [`hacs.json`](https://contributors.home-assistant.io/marketplace/reference/hacs-json/).
 - HACS: [publishing requirements](https://hacs.xyz/docs/publish/start),
   [My Home Assistant links](https://hacs.xyz/docs/use/my/).
+- Home Assistant [analytics](https://analytics.home-assistant.io/), for the share of
+  installations on each version.
 - Versions: [Semantic Versioning 2.0.0](https://semver.org/),
   [PEP 440](https://peps.python.org/pep-0440/).
-- Sections 1, 3, 4.1 (work in progress), 5.2 to 5.8, 6 and 7 go beyond Home Assistant's
-  and HACS's rules.
+- Sections 1, 3, 4.1 (work in progress), 5.2 to 5.8, 6 and 7 go beyond Home Assistant's,
+  the Marketplace's and HACS's rules.

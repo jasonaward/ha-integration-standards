@@ -1,0 +1,153 @@
+# Self-assessment against Home Assistant's integration quality scale. This is a custom
+# integration, so Home Assistant doesn't review it; it aims for Platinum.
+# A release (a version without b) needs every Bronze, Silver, and Gold rule done or exempt.
+rules:
+  # Bronze
+  action-setup:
+    status: todo
+    comment: Not done yet.
+  appropriate-polling:
+    status: todo
+    comment: Not done yet.
+  brands:
+    status: todo
+    comment: Add the icon and logo in brand/, from SVG sources in docs/brand/.
+  common-modules:
+    status: todo
+    comment: Not done yet.
+  config-flow: done
+  config-flow-test-coverage: done
+  dependency-transparency:
+    status: todo
+    comment: Not done yet.
+  docs-actions:
+    status: todo
+    comment: Not done yet.
+  docs-high-level-description:
+    status: todo
+    comment: Not done yet.
+  docs-installation-instructions: done
+  docs-removal-instructions: done
+  entity-event-setup:
+    status: todo
+    comment: Not done yet.
+  entity-unique-id:
+    status: todo
+    comment: Not done yet.
+  has-entity-name:
+    status: todo
+    comment: Not done yet.
+  runtime-data:
+    status: todo
+    comment: Not done yet.
+  test-before-configure:
+    status: todo
+    comment: Not done yet.
+  test-before-setup:
+    status: todo
+    comment: Not done yet.
+  unique-config-entry: done
+
+  # Silver
+  action-exceptions:
+    status: todo
+    comment: Not done yet.
+  config-entry-unloading: done
+  docs-configuration-parameters:
+    status: todo
+    comment: Not done yet.
+  docs-installation-parameters:
+    status: todo
+    comment: Not done yet.
+  entity-unavailable:
+    status: todo
+    comment: Not done yet.
+  integration-owner: done
+  log-when-unavailable:
+    status: todo
+    comment: Not done yet.
+  parallel-updates:
+    status: todo
+    comment: Not done yet.
+  reauthentication-flow:
+    status: todo
+    comment: Not done yet.
+  test-coverage:
+    status: todo
+    comment: Not done yet.
+
+  # Gold
+  devices:
+    status: todo
+    comment: Not done yet.
+  diagnostics:
+    status: todo
+    comment: Not done yet.
+  discovery:
+    status: todo
+    comment: Not done yet.
+  discovery-update-info:
+    status: todo
+    comment: Not done yet.
+  docs-data-update:
+    status: todo
+    comment: Not done yet.
+  docs-examples:
+    status: todo
+    comment: Not done yet.
+  docs-known-limitations:
+    status: todo
+    comment: Not done yet.
+  docs-supported-devices:
+    status: todo
+    comment: Not done yet.
+  docs-supported-functions:
+    status: todo
+    comment: Not done yet.
+  docs-troubleshooting:
+    status: todo
+    comment: Not done yet.
+  docs-use-cases:
+    status: todo
+    comment: Not done yet.
+  dynamic-devices:
+    status: todo
+    comment: Not done yet.
+  entity-category:
+    status: todo
+    comment: Not done yet.
+  entity-device-class:
+    status: todo
+    comment: Not done yet.
+  entity-disabled-by-default:
+    status: todo
+    comment: Not done yet.
+  entity-translations:
+    status: todo
+    comment: Not done yet.
+  exception-translations:
+    status: todo
+    comment: Not done yet.
+  icon-translations:
+    status: todo
+    comment: Not done yet.
+  reconfiguration-flow:
+    status: todo
+    comment: Not done yet.
+  repair-issues:
+    status: todo
+    comment: Not done yet.
+  stale-devices:
+    status: todo
+    comment: Not done yet.
+
+  # Platinum
+  async-dependency:
+    status: todo
+    comment: Not done yet.
+  inject-websession:
+    status: todo
+    comment: Not done yet.
+  strict-typing:
+    status: todo
+    comment: Not done yet.

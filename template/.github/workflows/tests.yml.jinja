@@ -1,0 +1,72 @@
+{% raw %}name: Tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "23 6 * * 2"  # weekly, including against Home Assistant's upcoming beta
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - run: pip install ruff
+      - name: Lint (including security rules)
+        run: ruff check .
+      - name: Formatting
+        run: ruff format --check .
+      - name: No runtime dependencies
+        # The integration uses only Home Assistant's own packages. Adding one needs
+        # a pinned version, a vulnerability check and a review.
+        run: test "$(jq -c .requirements custom_components/*/manifest.json)" = "[]"
+
+  pytest:
+    runs-on: ubuntu-latest
+    # A failure against the upcoming beta is a warning to act on, not a broken build.
+    continue-on-error: ${{ matrix.prerelease == 'allow' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: latest Home Assistant
+            python: "3.14"
+            packages: pytest-homeassistant-custom-component
+            prerelease: disallow
+{% endraw %}          - name: minimum supported ({{ minimum_ha.rsplit('.', 1)[0] }})
+            python: "3.14"
+            packages: homeassistant=={{ minimum_ha.rsplit('.', 1)[0] }}.* pytest-homeassistant-custom-component{% raw %}
+            prerelease: disallow
+          - name: upcoming beta
+            python: "3.14"
+            packages: pytest-homeassistant-custom-component
+            prerelease: allow
+    name: pytest (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install uv
+      - run: uv pip install --system --prerelease=${{ matrix.prerelease }} ${{ matrix.packages }} -r requirements_test.txt
+      - run: pytest -q --cov=custom_components --cov-branch --cov-report=term-missing --cov-report=json
+      - name: Above 95% line coverage in every module
+        if: matrix.name == 'latest Home Assistant'
+        run: python scripts/check_coverage.py coverage.json 95
+      - name: Strict type checking (against the newest Home Assistant)
+        if: matrix.name == 'latest Home Assistant'
+        run: |
+          uv pip install --system mypy
+          mypy
+{% endraw %}

@@ -1,0 +1,3 @@
+# Test-only. Home Assistant and its test helpers come from
+# pytest-homeassistant-custom-component, installed by CI for each Home Assistant version.
+pytest-cov

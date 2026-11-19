@@ -1,0 +1,34 @@
+# Security policy
+
+## Supported versions
+
+Only the latest version, including betas, gets fixes.
+
+## Reporting a vulnerability
+
+Please report privately, never in a public issue. Use GitHub's
+[Report a vulnerability](https://github.com/jasonaward/{{ repo }}/security/advisories/new)
+(**Security** tab > **Advisories**). If you can't use GitHub, email
+{{ public_email }}.
+
+Include what you found, how to reproduce it, and the version. You can expect a reply
+within a week. Please allow a reasonable time for a fix before disclosing it. Once a
+vulnerability is fixed, it's published as a GitHub security advisory and noted in the
+changelog.
+
+## Scope
+
+In scope: anything in this repository that could expose a user's credentials, tokens, or
+private data (in logs, diagnostics, or elsewhere), or let someone else control a
+{{ device }}.
+{% if company %}
+Out of scope: {{ company }}'s own service and app. Report those to {{ company }}.
+{% endif %}
+## What the integration does with your data
+
+See [Security and privacy](README.md#security-and-privacy) in the README.
+
+## Never post
+
+Your password, tokens, `.storage` files, or recordings of network traffic. Diagnostics
+downloads leave out private fields, but look them over before posting.
