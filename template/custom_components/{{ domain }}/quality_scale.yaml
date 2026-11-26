@@ -22,12 +22,22 @@ rules:
     comment: Not done yet.
   docs-actions:
     status: todo
-    comment: Not done yet.
+    comment: Not done yet; exempt (with that reason) if the integration has no actions.
+  docs-conditions:
+    status: todo
+    comment: Not done yet; exempt (with that reason) if the integration has no conditions.
   docs-high-level-description:
     status: todo
     comment: Not done yet.
-  docs-installation-instructions: done
-  docs-removal-instructions: done
+  docs-installation-instructions:
+    status: todo
+    comment: Not done yet.
+  docs-removal-instructions:
+    status: todo
+    comment: Not done yet.
+  docs-triggers:
+    status: todo
+    comment: Not done yet; exempt (with that reason) if the integration has no triggers.
   entity-event-setup:
     status: todo
     comment: Not done yet.

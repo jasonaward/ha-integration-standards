@@ -47,6 +47,12 @@ description:
   type: str
   help: One sentence on what the product is (for the README introduction)
 
+website:
+  type: str
+  help: The manufacturer's or service's website, linked from the README introduction
+  validator: >-
+    {% if not (website | regex_search('^https://')) %}Use a full https:// address.{% endif %}
+
 iot_class:
   type: str
   default: cloud_polling

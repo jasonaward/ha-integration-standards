@@ -26,6 +26,7 @@ VENDOR = {
     "device": "heater",
     "equipment": "heaters, pool equipment",
     "description": "The Acme Heater is a pool heater with Wi-Fi.",
+    "website": "https://www.acme.example",
     "first_date": "2026-11-19",
 }
 OWN = {
@@ -33,6 +34,7 @@ OWN = {
     "product": "My Sensor",
     "device": "sensor",
     "description": "My Sensor is a homemade temperature sensor.",
+    "website": "https://sensor.example",
     "iot_class": "local_polling",
     "first_date": "2026-11-19",
 }
@@ -65,9 +67,18 @@ def _make(tmp_path: Path, answers: dict[str, str]) -> Path:
         (brand / f"{prefix}logo.png").write_bytes(_png(512, 256))
         (brand / f"{prefix}logo@2x.png").write_bytes(_png(1024, 512))
         (dst / "docs" / "brand" / f"{prefix}icon.svg").write_text("<svg/>")
-    subprocess.run(["git", "init", "-q", str(dst)], check=True)
-    subprocess.run(["git", "-C", str(dst), "add", "-A"], check=True)
+    _git(dst, "init", "-q")
+    _git(dst, "add", "-A")
+    _git(dst, "commit", "-q", "-m", "First commit")
     return dst
+
+
+def _git(path: Path, *args: str) -> None:
+    identity = ["-c", "user.name=Jason Ward", "-c", f"user.email={NOREPLY}"]
+    subprocess.run(["git", *identity, "-C", str(path), *args], check=True)
+
+
+NOREPLY = "1+jasonaward@users.noreply.github.com"
 
 
 @pytest.fixture(scope="module")
@@ -152,26 +163,81 @@ BREAKS = [
     ("tests/conftest.py", "homeassistant.helpers.frame", "logging", "deprecated use"),
     (
         "CHANGELOG.md",
-        "- TODO: user-facing changes",
-        "- **Entities**: renamed.\n\n**Action needed:** update automations.\n- TODO: user-facing changes",
-        "should come first",
+        "- **TODO**: user-facing changes",
+        "- **Entities**: renamed.\n- **Action needed:** update automations.\n- **TODO**: "
+        "user-facing changes",
+        "should be the first bullet",
     ),
+    ("CHANGELOG.md", "- **First test release**", "First test release", "only bullets"),
+    ("README.md", "See [Acme's website](https://www.acme.example).", "", "website"),
+    ("README.md", "### Symptom: ", "### Problem: ", "Symptom"),
+    ("requirements_test.txt", "pytest-cov==7.1.0", "pytest-cov", "not pinned exactly"),
+    ("hacs.json", '"zip_release": true', '"zip_release": true, "render_readme": true', None),
 ]
 
 
 @pytest.mark.parametrize(("name", "old", "new", "expected"), BREAKS)
 def test_breaking_a_rule_fails(project, name, old, new, expected):
     _edit(project, name, old, new)
+    if expected is None:  # a should rule: a warning, not an error
+        report = check_standard.run(project)
+        assert report.errors == []
+        assert report.warnings
+        return
     errors = _errors(project)
     assert any(expected in error for error in errors), errors
+
+
+def test_strings_json_fails(project):
+    (project / "custom_components/acme_heater/strings.json").write_text("{}")
+    assert any("strings.json" in e for e in _errors(project))
+
+
+def test_bundled_library_fails(project):
+    library = project / "custom_components/acme_heater/pyacme"
+    library.mkdir()
+    (library / "__init__.py").write_text('__version__ = "0.1.0"\n')
+    assert any("bundled client library" in e for e in _errors(project))
+
+
+def test_polling_option_fails(project):
+    flow = project / "custom_components/acme_heater/config_flow.py"
+    flow.write_text(flow.read_text() + '\nCONF_SCAN_INTERVAL = "scan_interval"\n')
+    assert any("appropriate-polling" in e for e in _errors(project))
+
+
+def test_commit_trailers_fail(project):
+    (project / "x.txt").write_text("x")
+    _git(project, "add", "x.txt")
+    _git(project, "commit", "-q", "-m", "Change\n\nCo-Authored-By: Someone <a@mailhost.test>")
+    errors = _errors(project)
+    assert any("trailer" in e for e in errors), errors
+    assert any("email address" in e for e in errors), errors
+
+
+def test_maintainer_commits_use_noreply(project):
+    (project / "x.txt").write_text("x")
+    subprocess.run(
+        ["git", "-c", "user.name=Jason Ward", "-c", "user.email=jason@mailhost.test",
+         "-C", str(project), "commit", "-q", "-am", "x", "--allow-empty"],
+        check=True,
+    )  # fmt: skip
+    assert any("noreply address" in e for e in _errors(project))
+
+
+def test_release_needs_the_audit_report(project):
+    errors = check_standard.run(project, release=True).errors
+    assert any("audit report" in e for e in errors), errors
+    (project / "docs/audits/0.1.0b1.md").write_text("# Audit of 0.1.0b1\n")
+    assert check_standard.run(project, release=True).errors == []
 
 
 def test_action_needed_first_passes(project):
     _edit(
         project,
         "CHANGELOG.md",
-        "First test release",
-        "**Action needed:** reinstall.\n\nFirst test release",
+        "- **First test release**",
+        "- **Action needed:** reinstall.\n- **First test release**",
     )
     assert not [e for e in _errors(project) if "Action needed" in e]
 

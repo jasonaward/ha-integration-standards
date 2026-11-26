@@ -1,27 +1,50 @@
 # Changelog
 
-## 0.2.0 (2026-11-19)
+## 0.2.0 (2026-11-26)
 
-**Action needed:** projects on 0.1.0 update their README's install steps, changelog order,
-tests, and `.standard-version` as below, and pin the check to this version.
-
+- **Action needed:** projects on 0.1.0 update to the rules below: move client code into a
+  library on PyPI, drop `strings.json` and any polling-interval option, adopt the new
+  test tools, changelog format, README sections and release workflow, list the two new
+  quality-scale rules, and pin the check to this version.
+- **Home Assistant's rules first, read as written**: quality-scale claims hold against the
+  rule's current text, not by a technicality, and `exempt` only under the rule's own
+  exception. Links point to Home Assistant's new contributor documentation.
+- **Quality scale**: 54 rules, adding `docs-triggers` and `docs-conditions`.
+- **Client libraries**: code that talks to a device or service lives in its own public
+  `py<name>` repository, released to PyPI by CI with trusted publishing, as Home
+  Assistant requires (`dependency-transparency`). This replaces 0.1.0's bundled libraries,
+  which contradicted Home Assistant.
+- **Manifest**: `loggers` names the requirements' loggers, as Home Assistant defines it.
+- **Translations**: a complete `translations/en.json`; no `strings.json`, which Home
+  Assistant doesn't use for custom integrations.
+- **Polling**: no polling-interval option; _should_: a minimum time between requests to a
+  vendor's cloud, whatever users or automations ask, stated in the README.
 - **Marketplace**: Home Assistant 2026.11 builds HACS in as the Marketplace. Projects
-  follow its publishing guides as well as HACS's; the README's `### Marketplace or HACS`
-  covers both, including how to get betas with the Marketplace's **Pre-release** switch.
+  follow its publishing guides as well as HACS's; `render_readme` is dropped; the README's
+  `### Marketplace or HACS` covers both, including betas and going back a version.
+- **Tests**: Home Assistant's own `pytest-homeassistant` replaces the retired
+  `pytest-homeassistant-custom-component` (kept only for minimum versions before 2026.11);
+  the latest stable release is really tested, and _should_, the latest beta weekly;
+  tests fail when Home Assistant reports a deprecated use by the project's code; test
+  requirements pinned; above 95% line coverage per module, branch coverage reported.
 - **Minimum Home Assistant version**: chosen for reach and upkeep, no older than about 12
-  months and not under 3 months old, checking Home Assistant's analytics; code for older
-  versions is kept small, labeled, and tested.
-- **Deprecations**: tests fail when Home Assistant reports a deprecated use by the
-  project's own code.
-- **Changelog**: **Action needed:** comes first in its version's section, since it's
-  shown as the update's release notes.
+  months and not under 3 months old unless a needed feature requires it, checking Home
+  Assistant's analytics; code for older versions kept small, labeled and tested.
+- **Releases**: started from the Actions tab; CI creates the tag and the release. Every
+  release, betas included, follows an independent audit, kept in
+  `docs/audits/<version>.md` and required by the release check.
+- **Changelog**: bullets only; **Action needed:** is the first bullet, since it's shown as
+  the update's release notes.
+- **README**: the introduction links the manufacturer's or service's website; triggers,
+  conditions and actions in Home Assistant's order; troubleshooting as symptom, cause and
+  fix; deliberate differences from Home Assistant's page structure stated.
+- **Commits**: the maintainer's noreply address only, with no co-author lines.
 - **Published means tagged**: a version, of a project or of this standard, is published
   when its tag exists, and can't change after that.
-- **Marketplace wording checked against Home Assistant 2026.11**: **Add from link** and
-  **GitHub link** for adding a repository; **Include pre-releases** or **Install another
-  version** for betas; restoring a backup to go back, as Home Assistant advises.
+- **Device pages** show only identifiers known to be right.
 - **Shared check** (`check/check_standard.py`) and a reusable workflow that runs it in
-  each project's CI, from the version in its `.standard-version`.
+  each project's CI, from the version in its `.standard-version`, including commit
+  history and, when releasing, the audit report.
 - **Copier template** that creates a project meeting the standard, with a minimal working
   integration and tests; `copier update` brings in later template changes.
 

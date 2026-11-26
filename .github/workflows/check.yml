@@ -7,8 +7,14 @@ name: Standard check
 #       uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@<commit SHA>
 #
 # It runs the check from the standard version in the project's .standard-version.
+# The release workflow passes `release: true`, which also requires the audit report.
 on:
   workflow_call:
+    inputs:
+      release:
+        description: Also check what a release needs (the audit report)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -21,6 +27,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # the check reads every commit
       - name: Standard version
         id: version
         run: |
@@ -37,4 +44,11 @@ jobs:
         with:
           python-version: "3.13"
       - name: Check
-        run: python .standard/check/check_standard.py .
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: |
+          if [ "$RELEASE" = "true" ]; then
+            python .standard/check/check_standard.py --release .
+          else
+            python .standard/check/check_standard.py .
+          fi

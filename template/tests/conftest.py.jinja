@@ -22,5 +22,5 @@ def no_deprecated_use(caplog):
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
-    """Load custom_components/ in every test."""
+    """Load custom_components/ in every test (needed by the older test package)."""
     yield

@@ -1,3 +1,4 @@
-# Test-only. Home Assistant and its test helpers come from
-# pytest-homeassistant-custom-component, installed by CI for each Home Assistant version.
-pytest-cov
+# Test-only dependencies, pinned exactly and kept current by Dependabot. Home Assistant and
+# its test helpers come from pytest-homeassistant-custom-component, which CI installs for
+# each Home Assistant version it tests.
+pytest-cov==7.1.0

@@ -50,7 +50,7 @@ The rules that matter most:
 - Never log passwords, tokens, or full device IDs.
 - No new dependencies without discussion first.
 - Be gentle with the {{ device }}{% if company %} and {{ company }}'s service{% endif %}: no new polling without a limit.
-- User-facing text goes in `strings.json` and `translations/en.json`.
+- User-facing text goes in `translations/en.json`, never in code.
 - Keep every module above 95% test coverage, and add a line to `CHANGELOG.md`.
 - Use made-up values in tests and examples, never real emails, device IDs, serial
   numbers, or MAC addresses.

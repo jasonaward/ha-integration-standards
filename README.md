@@ -38,10 +38,11 @@ pip install copier
 copier copy --trust gh:jasonaward/ha-integration-standards ha-<domain>
 ```
 
-Copier asks for the domain, the product, and the company (left empty for your own
-product), and creates the repository. Then add the brand images, build the integration,
-and fill in each README section marked TODO. To bring in later changes to the template,
-run `copier update --trust` in the project and review the result.
+Copier asks for the domain, the product, the company (left empty for your own product)
+and its website, and creates the repository. Then add the brand images, create the
+client library (`py<name>`, section 6.4), build the integration, and fill in each README
+section marked TODO. To bring in later changes to the template, run
+`copier update --trust` in the project and review the result.
 
 ### Running the check
 
@@ -54,12 +55,18 @@ jobs:
     uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@<commit SHA>
 ```
 
-It runs the check from the standard version in the project's `.standard-version`. To
-run it locally, with Python 3.12 or later and nothing else to install:
+It runs the check from the standard version in the project's `.standard-version`,
+including the project's commit history. The release workflow calls it with
+`release: true`, which also requires the release's audit report. To run it locally,
+with Python 3.12 or later and nothing else to install:
 
 ```bash
 python path/to/ha-integration-standards/check/check_standard.py path/to/project
+python path/to/ha-integration-standards/check/check_standard.py --release path/to/project
 ```
+
+The check covers the rules a program can test. Whether a rule is really met, such as a
+quality-scale claim, is for the audit before each release (section 4.3.4).
 
 ## License
 

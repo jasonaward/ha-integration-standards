@@ -29,15 +29,15 @@ LICENSE = HERE.parent / "LICENSE"
 OWNER = "jasonaward"
 AUTHOR = "Jason Ward"
 VERSION = re.compile(r"^0\.(0|[1-9]\d*)\.(0|[1-9]\d*)(b[1-9]\d*)?$")
-HA_VERSION = re.compile(r"^20\d\d\.\d{1,2}\.\d+$")
+HA_VERSION = re.compile(r"^20\d\d\.\d{1,2}\.\d+(b0)?$")
 PINNED = re.compile(r"^[A-Za-z0-9_.\-]+(\[[A-Za-z0-9_,.\-]+\])?==[A-Za-z0-9_.+!\-]+$")
 
 QUALITY_SCALE = {
     "bronze": [
         "action-setup", "appropriate-polling", "brands", "common-modules",
         "config-flow", "config-flow-test-coverage", "dependency-transparency",
-        "docs-actions", "docs-high-level-description", "docs-installation-instructions",
-        "docs-removal-instructions", "entity-event-setup", "entity-unique-id",
+        "docs-actions", "docs-conditions", "docs-high-level-description", "docs-installation-instructions",
+        "docs-removal-instructions", "docs-triggers", "entity-event-setup", "entity-unique-id",
         "has-entity-name", "runtime-data", "test-before-configure", "test-before-setup",
         "unique-config-entry",
     ],
@@ -57,6 +57,11 @@ QUALITY_SCALE = {
     "platinum": ["async-dependency", "inject-websession", "strict-typing"],
 }  # fmt: skip
 
+NOREPLY = re.compile(r"@users\.noreply\.github\.com$", re.IGNORECASE)
+TRAILER = re.compile(
+    r"^(Co-Authored-By|Signed-off-by|Claude-Session):", re.IGNORECASE | re.MULTILINE
+)
+
 # (heading pattern, required); "vendor" means required for another company's product.
 README_SECTIONS: list[tuple[str, bool | str]] = [
     (r"Use cases", True),
@@ -67,9 +72,9 @@ README_SECTIONS: list[tuple[str, bool | str]] = [
     (r"Configuration", True),
     (r"Configuration options", True),
     (r"Supported functionality", True),
-    (r"Actions", False),
     (r"Triggers", False),
     (r"Conditions", False),
+    (r"Actions", False),
     (r"Examples", True),
     (r"Data updates", True),
     (r"Load on .+", "vendor"),
@@ -87,7 +92,7 @@ REQUIRED_FILES = [
     "README.md", "CHANGELOG.md", "LICENSE", "NOTICE", "SECURITY.md", "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md", "hacs.json", ".gitignore", ".standard-version",
     ".github/pull_request_template.md", ".github/dependabot.yml",
-    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/config.yml", "requirements_test.txt",
 ]  # fmt: skip
 GITIGNORE = [
     "answers.json", "config_entry-*.json", "*.har", "*.flow", "*.pcap", "*.log",
@@ -102,7 +107,7 @@ BRAND_REQUIRED = {
 BRAND_LOGOS = {"logo.png": (128, 256), "logo@2x.png": (256, 512)}
 ALLOWED_EMAIL = re.compile(
     r"(@(example\.(com|org|net)|[a-z0-9-]+\.example)$)|(@users\.noreply\.github\.com$)|"
-    r"(^opensource@)|(^noreply@anthropic\.com$)",
+    r"(^opensource@)",
     re.IGNORECASE,
 )
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b")
@@ -200,11 +205,15 @@ def tracked_files(root: Path) -> list[Path]:
             ["git", "-C", str(root), "ls-files", "-co", "--exclude-standard", "-z"],
             capture_output=True, check=True, text=True,
         ).stdout  # fmt: skip
-        return [root / name for name in out.split("\0") if name and (root / name).is_file()]
+        return [
+            root / name
+            for name in out.split("\0")
+            if name and not name.startswith(".standard/") and (root / name).is_file()
+        ]
     except (OSError, subprocess.CalledProcessError):
         result = []
         for dirpath, dirnames, filenames in os.walk(root):
-            dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+            dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and d != ".standard"]
             result += [Path(dirpath) / name for name in filenames]
         return result
 
@@ -290,9 +299,14 @@ def check_integration(p: Project) -> None:
         return
     p.domain = domains[0].name
     base = f"custom_components/{p.domain}"
-    for name in ("manifest.json", "quality_scale.yaml", "strings.json", "translations/en.json"):
+    for name in ("manifest.json", "quality_scale.yaml", "translations/en.json"):
         if not p.path(f"{base}/{name}").is_file():
             r.error(f"{base}/{name}", "missing")
+    if p.path(f"{base}/strings.json").is_file():
+        r.error(
+            f"{base}/strings.json",
+            "Home Assistant doesn't use strings.json for custom integrations",
+        )
     try:
         p.manifest = json.loads(p.read(f"{base}/manifest.json") or "{}")
     except ValueError as err:
@@ -308,15 +322,17 @@ def check_integration(p: Project) -> None:
         r.error(where, f"documentation should be {url}")
     if m.get("issue_tracker") != f"{url}/issues":
         r.error(where, f"issue_tracker should be {url}/issues")
-    if not isinstance(m.get("loggers"), list) or not m.get("loggers"):
-        r.error(where, "loggers should name the integration's loggers")
     requirements = m.get("requirements")
     if not isinstance(requirements, list):
         r.error(where, "requirements should be a list (empty if none)")
-    else:
-        for req in requirements:
-            if not PINNED.match(str(req)):
-                r.error(where, f"requirement not pinned exactly: {req}")
+        requirements = []
+    for req in requirements:
+        if not PINNED.match(str(req)):
+            r.error(where, f"requirement not pinned exactly: {req}")
+    if not isinstance(m.get("loggers"), list):
+        r.error(where, "loggers should be a list")
+    elif requirements and not m.get("loggers"):
+        r.error(where, "loggers should name the loggers of the requirements")
     p.version = str(m.get("version", ""))
     if not VERSION.match(p.version):
         r.error(where, f"version {p.version!r} isn't 0.MINOR.PATCH or 0.MINOR.PATCHbN")
@@ -324,13 +340,19 @@ def check_integration(p: Project) -> None:
     if not name:
         r.error(where, "no name")
     for init in sorted(p.path(base).glob("*/__init__.py")):
-        found = re.search(
-            r'^__version__ = "([^"]+)"', init.read_text(encoding="utf-8"), re.MULTILINE
-        )
-        if found and found[1] != p.version:
+        if re.search(r"^__version__ = ", init.read_text(encoding="utf-8"), re.MULTILINE):
             r.error(
-                str(init.relative_to(p.root)),
-                f"__version__ {found[1]} doesn't match manifest {p.version}",
+                str(init.parent.relative_to(p.root)),
+                "a bundled client library: it belongs in its own repository on PyPI (6.4)",
+            )
+    for flow in sorted(p.path(base).glob("*flow*.py")):
+        if re.search(
+            r"CONF_SCAN_INTERVAL|[\"']scan_interval[\"']|update_interval",
+            flow.read_text(encoding="utf-8"),
+        ):
+            r.error(
+                str(flow.relative_to(p.root)),
+                "users mustn't set the polling interval (appropriate-polling)",
             )
 
 
@@ -343,14 +365,16 @@ def check_hacs(p: Project) -> None:
     except ValueError as err:
         p.report.error("hacs.json", f"invalid JSON: {err}")
         return
-    want = {"zip_release": True, "render_readme": True, "filename": f"{p.domain}.zip"}
+    want = {"zip_release": True, "filename": f"{p.domain}.zip"}
     for key, value in want.items():
         if hacs.get(key) != value:
             p.report.error("hacs.json", f"{key} should be {json.dumps(value)}")
     if hacs.get("name") != p.manifest.get("name"):
         p.report.error("hacs.json", "name should match the manifest's name")
     if not HA_VERSION.match(str(hacs.get("homeassistant", ""))):
-        p.report.error("hacs.json", "homeassistant should be the minimum version, like 2025.1.0")
+        p.report.error("hacs.json", "homeassistant should be the minimum version, like 2026.3.0")
+    if "render_readme" in hacs:
+        p.report.warn("hacs.json", "render_readme isn't used by HACS or the Marketplace any more")
 
 
 def check_changelog(p: Project) -> None:
@@ -376,11 +400,13 @@ def check_changelog(p: Project) -> None:
     if len(set(versions)) != len(versions):
         p.report.error("CHANGELOG.md", "a version appears twice")
     for heading, body in re.findall(r"^## (.+?)\n(.*?)(?=^## |\Z)", text, re.MULTILINE | re.DOTALL):
-        if "**Action needed:**" in body and not re.match(
-            r"(- )?\*\*Action needed:\*\*", body.strip()
-        ):
+        for line in body.splitlines():
+            if line.strip() and not line.startswith(("- ", "  ")):
+                p.report.error("CHANGELOG.md", f"'## {heading}' should contain only bullets")
+                break
+        if "**Action needed:**" in body and not body.strip().startswith("- **Action needed:**"):
             p.report.error(
-                "CHANGELOG.md", f"**Action needed:** should come first in '## {heading}'"
+                "CHANGELOG.md", f"**Action needed:** should be the first bullet in '## {heading}'"
             )
     if p.version and (not versions or versions[0] != p.version):
         p.report.error("CHANGELOG.md", f"the newest entry should be {p.version}")
@@ -437,6 +463,10 @@ def check_readme(p: Project) -> None:
     if text.splitlines()[0].strip() != title:
         r.error(where, f"first line should be '{title}'")
 
+    intro = text.split("\n## ", 1)[0].split("\n> ", 1)[0]
+    if not re.search(r"\]\(https?://", intro):
+        r.error(where, "the introduction should link the manufacturer's or service's website")
+
     found = re.findall(r"^## (.+?)\s*$", text, re.MULTILINE)
     positions = []
     for heading in found:
@@ -476,6 +506,8 @@ def check_readme(p: Project) -> None:
         )
     trouble = sections.get("Troubleshooting", "")
     subs = re.findall(r"^### (.+?)\s*$", trouble, re.MULTILINE)
+    if not any(s.startswith("Symptom: ") for s in subs):
+        r.error(where, "'## Troubleshooting' should describe problems as '### Symptom: ...'")
     if not subs or subs[-1] != "Reporting a problem":
         r.error(where, "'## Troubleshooting' should end with '### Reporting a problem'")
     else:
@@ -541,8 +573,11 @@ def check_readme(p: Project) -> None:
         r.warn(where, f"badges other than the install buttons: {len(others)}")
     if re.search(r"\bTODO\b", text):
         r.warn(where, "contains TODO")
-    if re.search(r"\be\.g\.", text):
-        r.warn(where, "uses 'e.g.' (the style guide says 'for example')")
+    for name in ["README.md", "CHANGELOG.md"] + [
+        f.relative_to(p.root).as_posix() for f in sorted(p.path("docs").rglob("*.md"))
+    ]:
+        if re.search(r"\be\.g\.", p.read(name) or ""):
+            r.warn(name, "uses 'e.g.' (the style guide says 'for example')")
 
 
 def check_docs(p: Project) -> None:
@@ -611,12 +646,65 @@ def check_docs(p: Project) -> None:
 
 def check_tests(p: Project) -> None:
     tests = [f for f in p.path("tests").rglob("*.py")] if p.path("tests").is_dir() else []
+    conftest = p.read("tests/conftest.py") or ""
     if not tests:
         p.report.error("tests", "no tests")
-    elif not any("homeassistant.helpers.frame" in f.read_text(encoding="utf-8") for f in tests):
+    elif not (
+        "homeassistant.helpers.frame" in conftest
+        and "autouse=True" in conftest
+        and "caplog" in conftest
+    ):
         p.report.error(
-            "tests", "tests should fail when Home Assistant reports a deprecated use (section 2)"
+            "tests/conftest.py",
+            "needs an autouse fixture that fails tests when Home Assistant reports a "
+            "deprecated use (section 2)",
         )
+    text = p.read("requirements_test.txt")
+    for line in (text or "").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line and not line.startswith("-") and not PINNED.match(line):
+            p.report.error("requirements_test.txt", f"not pinned exactly: {line}")
+
+
+def git(p: Project, *args: str) -> str | None:
+    try:
+        return subprocess.run(
+            ["git", "-C", str(p.root), *args], capture_output=True, check=True, text=True
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def check_history(p: Project) -> None:
+    """The maintainer's commits: noreply addresses, no trailers, no other addresses."""
+    if git(p, "rev-parse", "--is-shallow-repository") == "true\n":
+        p.report.warn("git history", "shallow clone: only part of the history was checked")
+    log = git(p, "log", "--all", "--format=%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1e")
+    if log is None:
+        p.report.warn("git history", "not a git repository; commits weren't checked")
+        return
+    for record in filter(None, (r.strip() for r in log.split("\x1e"))):
+        sha, author, author_email, committer, committer_email, message = record.split("\x1f", 5)
+        where = f"commit {sha[:7]}"
+        for name, email in ((author, author_email), (committer, committer_email)):
+            if name == AUTHOR and not NOREPLY.search(email):
+                p.report.error(where, f"{AUTHOR}'s commits should use the noreply address")
+        if TRAILER.search(message):
+            p.report.error(where, "the message has co-author or other trailer lines (section 3)")
+        for match in EMAIL.finditer(message):
+            if not ALLOWED_EMAIL.search(match[0]):
+                p.report.error(where, "the message has an email address (section 3)")
+                break
+
+
+def check_release(p: Project) -> None:
+    """Only when releasing: the audit report for this version (4.3.4)."""
+    name = f"docs/audits/{p.version}.md"
+    text = p.read(name)
+    if text is None:
+        p.report.error(name, "missing: every release needs an audit report")
+    elif p.version not in text:
+        p.report.error(name, f"doesn't say which version it audits ({p.version})")
 
 
 def check_repository(p: Project, files: list[Path]) -> None:
@@ -645,9 +733,7 @@ def check_repository(p: Project, files: list[Path]) -> None:
                 r.error(where, f"not pinned to a full commit SHA: {use}")
         scheduled = scheduled or "schedule:" in content
     if not scheduled:
-        r.warn(
-            ".github/workflows", "no scheduled run (for example, weekly against the upcoming beta)"
-        )
+        r.warn(".github/workflows", "no scheduled run (weekly against the latest beta, 2.6)")
     if not any(
         "check_standard" in w.read_text(encoding="utf-8")
         or "ha-integration-standards" in w.read_text(encoding="utf-8")
@@ -683,7 +769,7 @@ def check_repository(p: Project, files: list[Path]) -> None:
             break
 
 
-def run(root: Path) -> Report:
+def run(root: Path, release: bool = False) -> Report:
     report = Report()
     p = Project(root=root, report=report)
     check_basics(p)
@@ -697,15 +783,21 @@ def run(root: Path) -> Report:
     check_docs(p)
     check_tests(p)
     check_repository(p, tracked_files(root))
+    check_history(p)
+    if release and p.domain:
+        check_release(p)
     return report
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("path", nargs="?", default=".", help="the project to check")
+    parser.add_argument(
+        "--release", action="store_true", help="also check what a release needs (4.3.4)"
+    )
     args = parser.parse_args(argv)
     root = Path(args.path).resolve()
-    report = run(root)
+    report = run(root, release=args.release)
     github = os.environ.get("GITHUB_ACTIONS") == "true"
     for message in report.errors:
         print(f"::error::{message}" if github else f"error: {message}")

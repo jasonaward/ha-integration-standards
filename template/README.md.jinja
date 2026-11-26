@@ -1,6 +1,6 @@
 # {{ name }} for Home Assistant
 
-{{ description }} TODO: say what this integration does with it, and how it connects{% if company %} (through {{ company }}'s service, the way the app does){% endif %}.
+{{ description }} See [{{ company or product }}'s website]({{ website }}). TODO: say what this integration does with it, and how it connects{% if company %} (through {{ company }}'s service, the way the app does){% endif %}.
 
 > **Hobby project, aiming for enterprise quality (0.1.0b1).** Built and tested to a
 > professional standard, but a personal project, offered as is: use it at your own risk.
@@ -78,9 +78,11 @@ On earlier versions, with HACS:
 only get once you've asked for them:
 
 - **Marketplace**: on this repository's page, select the three dots menu > **Install
-  another version** and choose the beta. To get later betas as updates, select **Include
-  pre-releases** in the same menu.
-- **HACS**: turn on **Show beta versions** for the repository.
+  another version** and choose the beta. To get later betas as updates, turn on
+  pre-releases for the repository: **Include pre-releases** in the same menu or, on some
+  versions, the repository device's **Pre-release** switch.
+- **HACS**: turn on the repository's pre-release switch (an entity of its device in HACS,
+  disabled by default).
 
 ### Manual
 
@@ -115,8 +117,10 @@ TODO: how often it reads, what triggers a read, and what users see when the
 {% if company %}
 ## Load on {{ company }}'s service
 
-TODO: the default read interval and the range users may set, what happens on errors,
-and limits on any heavier requests.
+TODO: how often it reads (a fixed interval: Home Assistant doesn't let users set it),
+the minimum time between reads however many are requested, how to read less often
+(turn off **Enable polling** in the integration's system options and use an automation
+with **Update entity**), what happens on errors, and limits on any heavier requests.
 {% endif %}
 ## Security and privacy
 
@@ -127,9 +131,9 @@ and limits on any heavier requests.
 - **What it can change**: TODO
 - **Logs**: TODO
 - **Diagnostics**: TODO. Look them over before posting them.
-- **Code**: no dependencies besides Home Assistant's own. Releases are built by GitHub
-  Actions from tagged commits, with build provenance. To report a vulnerability
-  privately, see [SECURITY.md](SECURITY.md).
+- **Code**: TODO: the client library (on PyPI, built by CI) and any other dependencies.
+  Releases are built by GitHub Actions, with build provenance, after an independent
+  audit. To report a vulnerability privately, see [SECURITY.md](SECURITY.md).
 
 ## Known limitations
 
@@ -139,6 +143,10 @@ and limits on any heavier requests.
   it's updated.{% endif %}
 
 ## Troubleshooting
+
+### Symptom: TODO, what the user sees
+
+TODO: what causes it, and how to fix it.
 
 ### Diagnostics
 
@@ -173,10 +181,11 @@ All of the code in this integration is written by AI, as part of learning when a
 AI-written code can be applied well, and of evaluating it as the technology improves.
 The maintainer directs the work and makes the design decisions. Changes go through a
 lengthy, iterative process of testing, verification, and validation, with real devices
-where applicable and with accounts and services the maintainer uses, and an
-AI-assisted security review against Home Assistant's integration quality scale, the
-maintainer's [integration standard](https://github.com/jasonaward/ha-integration-standards),
-and automated security scanning.
+where applicable and with accounts and services the maintainer uses. Before each
+release, an independent AI-assisted audit checks it against Home Assistant's
+integration quality scale and the maintainer's
+[integration standard](https://github.com/jasonaward/ha-integration-standards),
+alongside automated security scanning.
 
 It's maintained as well as possible while the maintainer uses these devices and
 services, and updated as needed to keep it working; if that changes, this README will

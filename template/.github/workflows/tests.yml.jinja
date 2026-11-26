@@ -1,10 +1,10 @@
-{% raw %}name: Tests
+{% set m = minimum_ha.split('.') %}{% set min_mm = m[0] ~ '.' ~ m[1] %}{% set min_new = (m[0]|int) * 100 + (m[1]|int) >= 202611 %}{% raw %}name: Tests
 
 on:
   push:
   pull_request:
   schedule:
-    - cron: "23 6 * * 2"  # weekly, including against Home Assistant's upcoming beta
+    - cron: "23 6 * * 2"  # weekly, including the latest Home Assistant beta
   workflow_dispatch:
 
 permissions:
@@ -25,30 +25,27 @@ jobs:
         run: ruff check .
       - name: Formatting
         run: ruff format --check .
-      - name: No runtime dependencies
-        # The integration uses only Home Assistant's own packages. Adding one needs
-        # a pinned version, a vulnerability check and a review.
-        run: test "$(jq -c .requirements custom_components/*/manifest.json)" = "[]"
 
   pytest:
     runs-on: ubuntu-latest
-    # A failure against the upcoming beta is a warning to act on, not a broken build.
+    # A failure against the beta is a warning to act on, not a broken build.
     continue-on-error: ${{ matrix.prerelease == 'allow' }}
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Home Assistant's own test package, at the latest stable release.
           - name: latest Home Assistant
-            python: "3.14"
-            packages: pytest-homeassistant-custom-component
+            packages: pytest-homeassistant
             prerelease: disallow
-{% endraw %}          - name: minimum supported ({{ minimum_ha.rsplit('.', 1)[0] }})
-            python: "3.14"
-            packages: homeassistant=={{ minimum_ha.rsplit('.', 1)[0] }}.* pytest-homeassistant-custom-component{% raw %}
+{% endraw %}          # The minimum version. pytest-homeassistant exists from 2026.11; for an earlier
+          # minimum, the retired pytest-homeassistant-custom-component build for it is used.
+          - name: minimum supported ({{ min_mm }})
+            packages: {% if min_new %}pytest-homeassistant=={{ min_mm }}.*{% else %}homeassistant=={{ min_mm }}.* pytest-homeassistant-custom-component{% endif %}{% raw %}
             prerelease: disallow
-          - name: upcoming beta
-            python: "3.14"
-            packages: pytest-homeassistant-custom-component
+          # The latest beta: an early warning of breaking changes.
+          - name: latest beta
+            packages: pytest-homeassistant
             prerelease: allow
     name: pytest (${{ matrix.name }})
     steps:
@@ -57,14 +54,16 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.14"
       - run: pip install uv
       - run: uv pip install --system --prerelease=${{ matrix.prerelease }} ${{ matrix.packages }} -r requirements_test.txt
+      - name: Home Assistant version tested
+        run: python -c "from homeassistant.const import __version__ as v; print(f'Tested on Home Assistant {v}')" | tee -a "$GITHUB_STEP_SUMMARY"
       - run: pytest -q --cov=custom_components --cov-branch --cov-report=term-missing --cov-report=json
       - name: Above 95% line coverage in every module
         if: matrix.name == 'latest Home Assistant'
         run: python scripts/check_coverage.py coverage.json 95
-      - name: Strict type checking (against the newest Home Assistant)
+      - name: Strict type checking (against the latest Home Assistant)
         if: matrix.name == 'latest Home Assistant'
         run: |
           uv pip install --system mypy
