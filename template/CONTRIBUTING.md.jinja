@@ -10,7 +10,8 @@ maintainer's [integration standard](https://github.com/jasonaward/ha-integration
 
 Use the [bug report form](https://github.com/jasonaward/{{ repo }}/issues/new/choose).
 Attach a diagnostics download: on the device page, select the three dots menu >
-**Download diagnostics**. Private fields are left out, but look it over before posting.
+**Download diagnostics**. Downloads are designed to leave out private fields, but look
+them over before posting.
 
 If asked for a debug log:
 
@@ -38,7 +39,7 @@ public issue.
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
-pip install pytest-homeassistant-custom-component -r requirements_test.txt ruff mypy
+pip install pytest-homeassistant -r requirements_test.txt -r requirements_ci.txt
 pytest -q --cov=custom_components --cov-report=json
 python scripts/check_coverage.py coverage.json 95
 ruff check . && ruff format --check .

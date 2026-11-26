@@ -58,6 +58,22 @@ iot_class:
   default: cloud_polling
   choices: [cloud_polling, cloud_push, local_polling, local_push, calculated]
 
+service_interface:
+  type: str
+  help: How it uses the company's service
+  default: app
+  choices:
+    The way the company's app does (not an official or public interface): app
+    The company's public interface: public
+  when: "{{ company != '' and iot_class.startswith('cloud_') }}"
+
+categories:
+  type: str
+  default: ""
+  help: >-
+    One to three integration categories, comma-separated, from
+    https://contributors.home-assistant.io/core/integrations/categories/ (empty to add later)
+
 integration_type:
   type: str
   default: hub
@@ -66,9 +82,9 @@ integration_type:
 minimum_ha:
   type: str
   default: 2026.3.0
-  help: Minimum Home Assistant version
+  help: Minimum Home Assistant version (2026.3.0 or later, which shows the brand/ images)
   validator: >-
-    {% if not (minimum_ha | regex_search('^20[0-9][0-9][.][0-9]{1,2}[.][0-9]+$')) %}Use a version like 2025.1.0.{% endif %}
+    {% if not (minimum_ha | regex_search('^20[0-9][0-9][.][0-9]{1,2}[.][0-9]+$')) %}Use a version like 2026.3.0.{% elif (minimum_ha.split('.')[0] | int) * 100 + (minimum_ha.split('.')[1] | int) < 202603 %}Use 2026.3.0 or later (2.7).{% endif %}
 
 first_date:
   type: str
@@ -82,6 +98,11 @@ public_email:
   help: The public email for the code of conduct and security reports
 
 # Worked out from the answers; not asked.
+cloud:
+  type: bool
+  default: "{{ iot_class.startswith('cloud_') }}"
+  when: false
+
 name:
   type: str
   default: "{{ product }}{% if company %} (unofficial){% endif %}"

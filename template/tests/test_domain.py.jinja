@@ -1,0 +1,12 @@
+"""The domain is the integration's own (2.4)."""
+
+from __future__ import annotations
+
+from importlib.util import find_spec
+
+from custom_components.{{ domain }}.const import DOMAIN
+
+
+def test_domain_is_not_a_home_assistant_integration() -> None:
+    # A custom integration with a built-in integration's domain replaces it.
+    assert find_spec(f"homeassistant.components.{DOMAIN}") is None

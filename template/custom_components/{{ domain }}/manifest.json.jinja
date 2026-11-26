@@ -1,13 +1,16 @@
 {
   "domain": "{{ domain }}",
   "name": "{{ name }}",
+{%- if categories %}
+  "categories": [{% for c in categories.split(',') %}"{{ c | trim }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+{%- endif %}
   "codeowners": ["@jasonaward"],
   "config_flow": true,
   "documentation": "https://github.com/jasonaward/{{ repo }}",
   "integration_type": "{{ integration_type }}",
   "iot_class": "{{ iot_class }}",
   "issue_tracker": "https://github.com/jasonaward/{{ repo }}/issues",
-  "loggers": ["custom_components.{{ domain }}"],
+  "loggers": [],
   "requirements": [],
   "version": "0.1.0b1"
 }

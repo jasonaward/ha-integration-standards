@@ -9,14 +9,22 @@ from custom_components.{{ domain }}.const import DOMAIN
 
 @pytest.fixture(autouse=True)
 def no_deprecated_use(caplog):
-    """Fail any test in which Home Assistant reports a deprecated use by this integration."""
+    """Fail any test in which Home Assistant reports a deprecated use by this integration.
+
+    Home Assistant reports one through its frame helper ("custom integration '<domain>'"),
+    or, for a deprecated constant, function or alias, through the logger of the module that
+    has it ("... was used from <domain>").
+    """
     yield
-    reports = [
-        record.getMessage()
-        for record in caplog.get_records("call")
-        if record.name == "homeassistant.helpers.frame"
-        and f"integration '{DOMAIN}'" in record.getMessage()
-    ]
+    reports = []
+    for record in caplog.get_records("call"):
+        message = record.getMessage()
+        frame = (
+            record.name == "homeassistant.helpers.frame" and f"integration '{DOMAIN}'" in message
+        )
+        deprecated = "deprecated" in message.lower() and f"used from {DOMAIN}" in message
+        if frame or deprecated:
+            reports.append(message)
     assert not reports, reports
 
 

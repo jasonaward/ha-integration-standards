@@ -58,7 +58,15 @@ def _png(width: int, height: int) -> bytes:
 
 def _make(tmp_path: Path, answers: dict[str, str]) -> Path:
     dst = tmp_path / "project"
-    run_copy(str(ROOT), dst, data=answers, defaults=True, unsafe=True, quiet=True, vcs_ref="HEAD")
+    run_copy(
+        str(ROOT),
+        dst,
+        data=answers,
+        defaults=True,
+        unsafe=True,
+        quiet=True,
+        vcs_ref="HEAD",
+    )
     brand = dst / "custom_components" / answers["domain"] / "brand"
     brand.mkdir()
     for prefix in ("", "dark_"):
@@ -107,7 +115,7 @@ def _edit(path: Path, name: str, old: str, new: str) -> None:
 def test_vendor_project_passes(vendor):
     report = check_standard.run(vendor)
     assert report.errors == []
-    assert "README.md: contains TODO" in report.warnings
+    assert any(w.startswith("README.md: contains TODO") for w in report.warnings)
 
 
 def test_own_product_passes(tmp_path):
@@ -129,16 +137,32 @@ def test_template_standard_version_matches():
 
 
 BREAKS = [
-    ("README.md", "use it at your own risk", "use it carefully", "5.2, hobby notice"),
-    ("README.md", "may not be permitted", "is permitted", "5.2, unofficial notice"),
+    ("README.md", "offered as is", "offered freely", "5.2, hobby notice"),
+    ("README.md", "may not be permitted", "is permitted", "5.2, how it connects"),
+    ("README.md", "used here only to say", "used to say", "5.2, unofficial notice"),
     ("README.md", "lengthy, iterative process", "quick process", "5.6, how it's made"),
     ("README.md", "even if advised", "unless advised", "5.8"),
-    ("README.md", "repository=ha-acme-heater", "repository=ha-other", "5.7, HACS button"),
+    (
+        "README.md",
+        "repository=ha-acme-heater",
+        "repository=ha-other",
+        "5.7, HACS button",
+    ),
     ("README.md", "## Use cases", "## Ideas", "missing section '## Use cases'"),
     ("README.md", "### Reporting a problem", "### Getting help", "Reporting a problem"),
     ("CHANGELOG.md", "## 0.1.0b1 (2026-11-19, beta)", "## 0.1.0b1", "heading isn't"),
-    ("custom_components/acme_heater/manifest.json", '"0.1.0b1"', '"1.0.0"', "isn't 0.MINOR"),
-    ("custom_components/acme_heater/manifest.json", '"@jasonaward"', '"@someone"', "codeowners"),
+    (
+        "custom_components/acme_heater/manifest.json",
+        '"0.1.0b1"',
+        '"1.0.0"',
+        "isn't 0.MINOR",
+    ),
+    (
+        "custom_components/acme_heater/manifest.json",
+        '"@jasonaward"',
+        '"@someone"',
+        "codeowners",
+    ),
     (
         "custom_components/acme_heater/quality_scale.yaml",
         "  config-flow: done\n",
@@ -154,25 +178,74 @@ BREAKS = [
     (".github/ISSUE_TEMPLATE/config.yml", "false", "true", "blank_issues_enabled"),
     (".gitignore", "*.har\n", "", "should exclude *.har"),
     ("NOTICE", "Jason Ward and contributors", "Someone", "Copyright"),
-    ("CODE_OF_CONDUCT.md", "Contributor Covenant 3.0", "Our rules", "Contributor Covenant"),
+    (
+        "CODE_OF_CONDUCT.md",
+        "Contributor Covenant 3.0",
+        "Our rules",
+        "Contributor Covenant",
+    ),
     ("CONTRIBUTING.md", "## Reporting", "## Reports", "Reporting section"),
-    ("CONTRIBUTING.md", "Thanks for helping.", "Write to someone@mailhost.test.", "email address"),
+    (
+        "CONTRIBUTING.md",
+        "Thanks for helping.",
+        "Write to someone@mailhost.test.",
+        "email address",
+    ),
     ("hacs.json", '"zip_release": true', '"zip_release": false', "zip_release"),
     ("LICENSE", "Apache License", "Other License", "LICENSE"),
     ("README.md", "### Marketplace or HACS", "### HACS", "Marketplace or HACS"),
-    ("tests/conftest.py", "homeassistant.helpers.frame", "logging", "deprecated use"),
+    ("tests/conftest.py", "used from {DOMAIN}", "called from {DOMAIN}", "deprecated use"),
     (
         "CHANGELOG.md",
         "- **TODO**: user-facing changes",
-        "- **Entities**: renamed.\n- **Action needed:** update automations.\n- **TODO**: "
-        "user-facing changes",
+        (
+            "- **Entities**: renamed.\n- **Action needed:** update automations.\n- **TODO**: "
+            "user-facing changes"
+        ),
         "should be the first bullet",
     ),
     ("CHANGELOG.md", "- **First test release**", "First test release", "only bullets"),
     ("README.md", "See [Acme's website](https://www.acme.example).", "", "website"),
     ("README.md", "### Symptom: ", "### Problem: ", "Symptom"),
-    ("requirements_test.txt", "pytest-cov==7.1.0", "pytest-cov", "not pinned exactly"),
-    ("hacs.json", '"zip_release": true', '"zip_release": true, "render_readme": true', None),
+    ("requirements_ci.txt", "pytest-cov==7.1.0", "pytest-cov", "not pinned exactly"),
+    ("hacs.json", '"hide_default_branch": true', '"hide_default_branch": false', "hide_default"),
+    ("hacs.json", '"2026.3.0"', '"2025.12.0"', "at least 2026.3.0"),
+    ("README.md", "Home Assistant 2026.3 or later", "Home Assistant", "minimum version"),
+    ("README.md", "a pool heater with Wi-Fi.", "a pool heater, e.g. a big one.", "e.g."),
+    ("README.md", "a pool heater with Wi-Fi.", "a heater, pump, etc.", "etc."),
+    ("NOTICE", "original artwork", "artwork", "brand images are original"),
+    (".standard-version", "0.2.0", "0.1.0", "change the two together"),
+    (
+        "pyproject.toml",
+        '"if TYPE_CHECKING:"]',
+        '"if TYPE_CHECKING:", "except ImportError:"]',
+        "mark version code",
+    ),
+    (
+        ".github/workflows/release.yml",
+        "environment: release",
+        "environment: other",
+        "release environment",
+    ),
+    (".github/workflows/release.yml", "default_branch", "any_branch", "default branch"),
+    (
+        ".github/workflows/release.yml",
+        "uses: ./.github/workflows/tests.yml",
+        "run: echo",
+        "full tests",
+    ),
+    (
+        "CHANGELOG.md",
+        "## 0.1.0b1 (2026-11-19, beta)",
+        "## 0.1.0b1 (2026-11-19, beta)\n\n- **x**: y.\n\n## 0.1.0b2 (2026-11-20, beta)",
+        "newest first",
+    ),
+    (
+        "custom_components/acme_heater/quality_scale.yaml",
+        "  strict-typing:\n    status: todo",
+        "  strict-typing:\n    status: todo",
+        None,
+    ),
 ]
 
 
@@ -209,7 +282,13 @@ def test_polling_option_fails(project):
 def test_commit_trailers_fail(project):
     (project / "x.txt").write_text("x")
     _git(project, "add", "x.txt")
-    _git(project, "commit", "-q", "-m", "Change\n\nCo-Authored-By: Someone <a@mailhost.test>")
+    _git(
+        project,
+        "commit",
+        "-q",
+        "-m",
+        "Change\n\nCo-Authored-By: Someone <a@mailhost.test>",
+    )
     errors = _errors(project)
     assert any("trailer" in e for e in errors), errors
     assert any("email address" in e for e in errors), errors
@@ -225,11 +304,131 @@ def test_maintainer_commits_use_noreply(project):
     assert any("noreply address" in e for e in _errors(project))
 
 
+def _audit_report(version: str = "0.1.0b1", rules: list[str] | None = None) -> str:
+    if rules is None:
+        rules = [rule for names in check_standard.QUALITY_SCALE.values() for rule in names]
+    header = (
+        f"# Audit of {version}\n\nVersion: {version}\nStandard: 0.2.0\nDate: 2026-11-26\n"
+        "Reviewer: an AI agent without the author's context\nContext: the repository only\n\n"
+    )
+    return header + "".join(f"- {rule}: done. Evidence.\n" for rule in rules)
+
+
+def _no_todo(project: Path) -> None:
+    readme = project / "README.md"
+    readme.write_text(readme.read_text().replace("TODO", "Filled in"))
+
+
 def test_release_needs_the_audit_report(project):
+    _no_todo(project)
     errors = check_standard.run(project, release=True).errors
     assert any("audit report" in e for e in errors), errors
-    (project / "docs/audits/0.1.0b1.md").write_text("# Audit of 0.1.0b1\n")
+    (project / "docs/audits/0.1.0b1.md").write_text(_audit_report())
     assert check_standard.run(project, release=True).errors == []
+
+
+def test_audit_report_needs_its_header_and_every_rule(project):
+    _no_todo(project)
+    report = project / "docs/audits/0.1.0b1.md"
+    report.write_text("# Audit of 0.1.0b1\n")
+    errors = check_standard.run(project, release=True).errors
+    assert any("'Reviewer:'" in e for e in errors), errors
+    report.write_text(_audit_report(rules=["brands"]))
+    errors = check_standard.run(project, release=True).errors
+    assert any("no verdict for 53 rule(s)" in e for e in errors), errors
+    report.write_text(_audit_report(version="0.1.0b0"))
+    errors = check_standard.run(project, release=True).errors
+    assert any("doesn't say it audits 0.1.0b1" in e for e in errors), errors
+
+
+def test_release_has_no_todo(project):
+    (project / "docs/audits/0.1.0b1.md").write_text(_audit_report())
+    errors = check_standard.run(project, release=True).errors
+    assert any("TODO" in e for e in errors), errors
+
+
+def test_bot_and_contributor_commits_keep_their_lines(project):
+    """Dependabot signs off; contributors may add co-authors (section 3)."""
+    for name, email, message in (
+        (
+            "dependabot[bot]",
+            "49699333+dependabot[bot]@users.noreply.github.com",
+            "Bump x\n\nSigned-off-by: dependabot[bot] <support@github.com>",
+        ),
+        (
+            "A Contributor",
+            "contributor@mailhost.test",
+            "Fix y\n\nCo-authored-by: Friend <friend@mailhost.test>",
+        ),
+    ):
+        subprocess.run(
+            ["git", "-c", f"user.name={name}", "-c", f"user.email={email}",
+             "-C", str(project), "commit", "-q", "--allow-empty", "-m", message],
+            check=True,
+        )  # fmt: skip
+    assert _errors(project) == []
+
+
+def test_other_branches_arent_checked(project):
+    _git(project, "checkout", "-q", "-b", "elsewhere")
+    _git(project, "commit", "-q", "--allow-empty", "-m", "x\n\nClaude-Session: abc")
+    _git(project, "checkout", "-q", "-")
+    assert _errors(project) == []
+
+
+def test_empty_readme_is_an_error_not_a_crash(project):
+    (project / "README.md").write_text("")
+    assert any("README.md: empty" in e for e in _errors(project))
+
+
+def test_missing_workflow_fails(project):
+    (project / ".github/workflows/codeql.yml").unlink()
+    assert any("codeql.yml: missing" in e for e in _errors(project))
+
+
+def test_changelog_order(project):
+    _edit(
+        project,
+        "CHANGELOG.md",
+        "## 0.1.0b1 (2026-11-19, beta)",
+        "## 0.1.0b0 (2026-11-20, beta)\n\n- **x**: y.\n\n## 0.1.0b1 (2026-11-19, beta)",
+    )
+    _edit(project, "custom_components/acme_heater/manifest.json", "0.1.0b1", "0.1.0b0")
+    errors = _errors(project)
+    assert any("newest first" in e or "isn't 0.MINOR" in e for e in errors), errors
+
+
+def test_changelog_order_by_version():
+    key = check_standard.version_key
+    assert key("0.1.0b1") < key("0.1.0b2") < key("0.1.0") < key("0.1.1b1") < key("0.2.0")
+
+
+def test_notice_may_credit_an_address(project):
+    _edit(
+        project,
+        "NOTICE",
+        "Jason Ward and contributors",
+        "Jason Ward and contributors\n\nAdapts code by A Person <person@mailhost.test>",
+    )
+    assert _errors(project) == []
+
+
+def test_local_device_of_another_company(tmp_path):
+    """5.2: no connection sentence and no load section for a local device."""
+    project = _make(tmp_path, {**VENDOR, "iot_class": "local_polling"})
+    assert _errors(project) == []
+    readme = (project / "README.md").read_text(encoding="utf-8")
+    assert "**Unofficial.**" in readme
+    assert "## Load on" not in readme
+    assert "terms of service" not in readme.split("## Use cases")[0]
+
+
+def test_public_interface(tmp_path):
+    project = _make(tmp_path, {**VENDOR, "service_interface": "public"})
+    assert _errors(project) == []
+    readme = (project / "README.md").read_text(encoding="utf-8")
+    assert "public interface, so it can stop working" in readme
+    assert "the way Acme's app does" not in readme
 
 
 def test_action_needed_first_passes(project):
@@ -249,7 +448,12 @@ def test_versions_must_match(project):
 
 def test_release_needs_gold(project):
     _edit(project, "custom_components/acme_heater/manifest.json", "0.1.0b1", "0.1.0")
-    _edit(project, "CHANGELOG.md", "## 0.1.0b1 (2026-11-19, beta)", "## 0.1.0 (2026-11-19)")
+    _edit(
+        project,
+        "CHANGELOG.md",
+        "## 0.1.0b1 (2026-11-19, beta)",
+        "## 0.1.0 (2026-11-19)",
+    )
     assert any("a release needs Gold" in e for e in _errors(project))
 
 
@@ -268,6 +472,7 @@ def test_brand_image_size(project):
 def test_command_line(vendor):
     result = subprocess.run(
         [sys.executable, str(ROOT / "check" / "check_standard.py"), str(vendor)],
+        check=False,
         capture_output=True,
         text=True,
     )

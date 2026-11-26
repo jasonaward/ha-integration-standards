@@ -6,7 +6,8 @@ name: Standard check
 #     standard:
 #       uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@<commit SHA>
 #
-# It runs the check from the standard version in the project's .standard-version.
+# It runs the check from the same commit as this workflow, so the commit a project pins
+# is the version of the standard it's checked against; its .standard-version must match.
 # The release workflow passes `release: true`, which also requires the audit report.
 on:
   workflow_call:
@@ -27,22 +28,28 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0 # the check reads every commit
-      - name: Standard version
-        id: version
-        run: |
-          version="$(tr -d '[:space:]' < .standard-version)"
-          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::.standard-version isn't a version"; exit 1; }
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          fetch-depth: 0 # the check reads the branch's commits
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: jasonaward/ha-integration-standards
-          ref: v${{ steps.version.outputs.version }}
+          # This workflow's own repository and commit (job context, from September 2026).
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
           path: .standard
           persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
+      - name: A pull request doesn't lower the standard version
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "refs/heads/$BASE:refs/remotes/origin/base"
+          old="$(git show origin/base:.standard-version 2>/dev/null | tr -d '[:space:]' || true)"
+          new="$(tr -d '[:space:]' < .standard-version)"
+          if [ -n "$old" ] && [ "$(printf '%s\n%s\n' "$old" "$new" | sort -V | tail -1)" != "$new" ]; then
+            echo "::error::.standard-version goes from $old down to $new"; exit 1
+          fi
       - name: Check
         env:
           RELEASE: ${{ inputs.release }}

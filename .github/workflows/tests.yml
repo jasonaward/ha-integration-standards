@@ -3,6 +3,9 @@ name: Tests
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "41 5 * * 3" # weekly: the template's test installs still resolve
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,7 +20,44 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
-      - name: Check and template tests
+      - run: pip install -r requirements_test.txt
+      - name: Lint
         run: |
-          pip install -r requirements_test.txt
-          pytest -q tests
+          ruff check .
+          ruff format --check .
+      - name: Check and template tests
+        run: pytest -q tests
+
+  # Each test job of a generated project must be able to install what it asks for.
+  template-installs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - run: pip install -r requirements_test.txt
+      - name: Resolve every test job's packages
+        run: python tests/resolve_template_installs.py
+
+  # A generated project's own tests pass on the latest Home Assistant, and its
+  # deprecation fixture catches a deprecated constant.
+  generated-project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # copier reads the template from git
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - run: pip install -r requirements_test.txt
+      - name: Home Assistant's test package, in its own environment
+        run: |
+          python -m venv "$RUNNER_TEMP/ha"
+          "$RUNNER_TEMP/ha/bin/pip" install pytest-homeassistant
+      - name: Generated project tests
+        run: HA_PYTHON="$RUNNER_TEMP/ha/bin/python" pytest -q tests/test_generated_project.py

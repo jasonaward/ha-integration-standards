@@ -17,7 +17,8 @@ document them; it isn't a warranty, guarantee or commitment to any user.
 - [`skills/ha-integration-standards/`](skills/ha-integration-standards/SKILL.md): a Claude
   skill that applies the standard when working on a project that has adopted it.
 - [`check/check_standard.py`](check/check_standard.py): the shared check (section 8).
-  Errors are must rules that aren't met; warnings are _should_ rules.
+  Errors are must rules that aren't met; warnings are a few _should_ rules, and `TODO`s
+  that a release can't have.
 - [`template/`](template) and [`copier.yml`](copier.yml): a
   [Copier](https://copier.readthedocs.io/) template that creates a project meeting the
   standard, with a minimal working integration and its tests.
@@ -38,10 +39,13 @@ pip install copier
 copier copy --trust gh:jasonaward/ha-integration-standards ha-<domain>
 ```
 
-Copier asks for the domain, the product, the company (left empty for your own product)
-and its website, and creates the repository. Then add the brand images, create the
-client library (`py<name>`, section 6.4), build the integration, and fill in each README
-section marked TODO. To bring in later changes to the template, run
+Copier asks for the domain, the product, the company (left empty for your own product),
+its trademarks, the device and equipment, a description and the website, how it connects
+(`iot_class`, and for another company's service whether it uses a public interface),
+the integration categories and type, the minimum Home Assistant version (2026.3.0 or
+later), the date of the first changelog entry and the public email, and creates the
+repository. Then add the brand images, create the client library (`py<name>`, section
+6.4), build the integration, and fill in each README section marked TODO. To bring in later changes to the template, run
 `copier update --trust` in the project and review the result.
 
 ### Running the check
@@ -55,9 +59,12 @@ jobs:
     uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@<commit SHA>
 ```
 
-It runs the check from the standard version in the project's `.standard-version`,
-including the project's commit history. The release workflow calls it with
-`release: true`, which also requires the release's audit report. To run it locally,
+It runs the check from that same commit, using the job context GitHub added to reusable
+workflows in September 2026, so it needs no tag. The commit pinned and the project's
+`.standard-version` must name the same version of the standard, and change together. It
+checks the maintainer's commits on the branch, and fails a pull request that lowers
+`.standard-version`. The release workflow calls it with `release: true`, which also
+requires the release's audit report. To run it locally,
 with Python 3.12 or later and nothing else to install:
 
 ```bash

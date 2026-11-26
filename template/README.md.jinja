@@ -1,19 +1,27 @@
 # {{ name }} for Home Assistant
 
-{{ description }} See [{{ company or product }}'s website]({{ website }}). TODO: say what this integration does with it, and how it connects{% if company %} (through {{ company }}'s service, the way the app does){% endif %}.
+{{ description }} See [{{ company or product }}'s website]({{ website }}). TODO: say what this integration does with it, and how it connects{% if company and cloud %} (through {{ company }}'s service{% if service_interface == 'app' %}, the way the app does{% endif %}){% endif %}.
 
-> **Hobby project, aiming for enterprise quality (0.1.0b1).** Built and tested to a
-> professional standard, but a personal project, offered as is: use it at your own risk.
+> **Hobby project, aiming for enterprise quality (0.1.0b1).** It aims to be built and
+> tested to a professional standard, but it's a personal project, offered as is: use it
+> at your own risk.
 > It's a work in progress, and an update may change entities or settings; check the
 > changelog before updating. It's used with the maintainer's own {{ device }}.
 >
 {%- if company %}
-> **Unofficial.** Not affiliated with, endorsed by, or supported by {{ company }}. It uses
-> {{ company }}'s service the way {{ company }}'s app does, not through an official or public
-> interface, so it can stop working whenever {{ company }} changes that service. Using it
-> may not be permitted by {{ company }}'s terms of service; you're responsible for your use
-> of your own account. {{ trademarks }} are trademarks of {{ company }}, used here only to say
-> which {{ device }} this works with.
+> **Unofficial.** Not affiliated with, endorsed by, or supported by {{ company }}.
+{%- if cloud and service_interface == 'app' %}
+> It uses {{ company }}'s service the way {{ company }}'s app does, not through an official or
+> public interface, so it can stop working whenever {{ company }} changes that service.
+> Using it may not be permitted by {{ company }}'s terms of service; you're responsible for
+> your use of your own account.
+{%- elif cloud %}
+> It uses {{ company }}'s public interface, so it can stop working whenever {{ company }}
+> changes it. You're responsible for your use of your own account under {{ company }}'s
+> terms of service.
+{%- endif %}
+> {{ trademarks }} are trademarks of {{ company }}, used here only to say which {{ device }}
+> this works with.
 >
 {%- endif %}
 > **No warranty, no liability.** Provided "as is" under the Apache License 2.0. You use
@@ -48,6 +56,7 @@ If you try one of these, please share how it went, as described in
 - For the recommended installation: the Marketplace, built into Home Assistant 2026.11
   and later, or [HACS](https://hacs.xyz/) on earlier versions.
 
+<!-- ha-marketplace:exclude-start -->
 ## Installation
 
 ### Marketplace or HACS
@@ -78,9 +87,10 @@ On earlier versions, with HACS:
 only get once you've asked for them:
 
 - **Marketplace**: on this repository's page, select the three dots menu > **Install
-  another version** and choose the beta. To get later betas as updates, turn on
-  pre-releases for the repository: **Include pre-releases** in the same menu or, on some
-  versions, the repository device's **Pre-release** switch.
+  another version** and choose the beta. To get later betas as updates, select
+  **Include pre-releases** in the same menu, or turn on the **Pre-release** switch of the
+  repository's device. The Marketplace then offers a pre-release while it's newer than
+  the latest regular release.
 - **HACS**: turn on the repository's pre-release switch (an entity of its device in HACS,
   disabled by default).
 
@@ -90,6 +100,7 @@ only get once you've asked for them:
    [latest release](https://github.com/jasonaward/{{ repo }}/releases).
 2. Unzip it into `config/custom_components/{{ domain }}/`.
 3. Restart Home Assistant, then follow [Configuration](#configuration).
+<!-- ha-marketplace:exclude-end -->
 
 ## Configuration
 
@@ -99,8 +110,8 @@ only get once you've asked for them:
 
 ## Configuration options
 
-TODO: each option, its default, and its effect, plus reconfiguration and
-re-authentication.
+TODO: each option, its default, and its effect, plus re-authentication and, if the
+integration has it, reconfiguration.
 
 ## Supported functionality
 
@@ -114,8 +125,8 @@ TODO: automations in YAML.
 
 TODO: how often it reads, what triggers a read, and what users see when the
 {{ device }} or service is unavailable.
-{% if company %}
-## Load on {{ company }}'s service
+{% if cloud %}
+## Load on {{ company or product }}'s service
 
 TODO: how often it reads (a fixed interval: Home Assistant doesn't let users set it),
 the minimum time between reads however many are requested, how to read less often
@@ -125,7 +136,7 @@ with **Update entity**), what happens on errors, and limits on any heavier reque
 ## Security and privacy
 
 - **What's stored**: TODO
-- **Where data goes**: TODO{% if company %} What {{ company }} does with data it receives is
+- **Where data goes**: TODO{% if company and cloud %} What {{ company }} does with data it receives is
   governed by its own privacy policy, as when using its app; this integration doesn't
   control or know it.{% endif %}
 - **What it can change**: TODO
@@ -137,9 +148,9 @@ with **Update entity**), what happens on errors, and limits on any heavier reque
 
 ## Known limitations
 
-- TODO{% if company %}
-- **{{ company }}'s service may change without notice.** This integration uses it the
-  way the app does, not through a public interface; a change can stop it working until
+- TODO{% if company and cloud %}
+- **{{ company }}'s service may change without notice.** {% if service_interface == 'app' %}This integration uses it the
+  way the app does, not through a public interface; a{% else %}A{% endif %} change can stop it working until
   it's updated.{% endif %}
 
 ## Troubleshooting
@@ -177,12 +188,13 @@ new or untested model. Report security issues privately, as described in
 
 ## Development
 
-All of the code in this integration is written by AI, as part of learning when and how
-AI-written code can be applied well, and of evaluating it as the technology improves.
+All of the maintainer's code in this integration is written by AI, as part of learning
+when and how AI-written code can be applied well, and of evaluating it as the
+technology improves.
 The maintainer directs the work and makes the design decisions. Changes go through a
 lengthy, iterative process of testing, verification, and validation, with real devices
 where applicable and with accounts and services the maintainer uses. Before each
-release, an independent AI-assisted audit checks it against Home Assistant's
+release, an independent audit checks it against Home Assistant's
 integration quality scale and the maintainer's
 [integration standard](https://github.com/jasonaward/ha-integration-standards),
 alongside automated security scanning.
@@ -201,7 +213,7 @@ This describes the maintainer's aims and process, not a guarantee; see
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
-pip install pytest-homeassistant-custom-component -r requirements_test.txt ruff mypy
+pip install pytest-homeassistant -r requirements_test.txt -r requirements_ci.txt
 pytest -q --cov=custom_components --cov-report=json
 python scripts/check_coverage.py coverage.json 95
 ruff check . && ruff format --check .

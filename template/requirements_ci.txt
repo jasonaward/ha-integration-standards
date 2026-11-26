@@ -1,0 +1,5 @@
+# CI tools, pinned exactly and kept current by Dependabot (2.6, 6.2.4). Never a package
+# that Home Assistant pins itself, or the test jobs can't install.
+mypy==2.4.1
+pytest-cov==7.1.0
+ruff==0.17.6

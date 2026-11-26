@@ -9,5 +9,6 @@ permissions:
 
 jobs:
   standard:
-    # The standard's shared check, from the version in .standard-version.
+    # The standard's shared check, from this commit of the standard; .standard-version
+    # names the same version, and both change together (8.3).
     uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@{{ _copier_conf.vcs_ref_hash }}

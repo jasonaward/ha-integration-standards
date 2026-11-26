@@ -6,6 +6,8 @@ asyncio_default_fixture_loop_scope = "function"
 addopts = "-p no:respx"
 pythonpath = ["."]
 testpaths = ["tests"]
+# A deprecation warning raised in this integration's code fails the test (2.6).
+filterwarnings = ["error::DeprecationWarning:custom_components"]
 
 [tool.ruff]
 target-version = "py314"
@@ -30,6 +32,6 @@ show_error_codes = true
 files = ["custom_components/{{ domain }}"]
 
 [tool.coverage.report]
-# Type-checking imports and imports for older Home Assistant versions aren't run
-# on the newest version, which the per-module check measures.
-exclude_also = ["if TYPE_CHECKING:", "except ImportError:"]
+# Type-checking imports never run. Code for only some Home Assistant versions is marked
+# "# pragma: no cover" with those versions (2.7); nothing else is excluded.
+exclude_also = ["if TYPE_CHECKING:"]

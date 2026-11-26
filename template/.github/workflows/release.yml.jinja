@@ -1,8 +1,8 @@
 {% raw %}name: Release
 
-# Started by the maintainer from the Actions tab (Run workflow) with the version, for
-# example 0.1.0b1. CI checks everything, then creates the tag and the GitHub release.
-# Releases are never made by hand.
+# Started by the maintainer from the Actions tab (Run workflow) on the default branch,
+# with the version, for example 0.1.0b1. CI runs every check, then creates the tag and the
+# GitHub release. Releases are never made by hand.
 on:
   workflow_dispatch:
     inputs:
@@ -14,41 +14,62 @@ on:
 permissions:
   contents: read
 
-jobs:
-  standard:
-    name: Standard (release check, including the audit report)
-{% endraw %}    uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@{{ _copier_conf.vcs_ref_hash }}{% raw %}
-    with:
-      release: true
+concurrency:
+  group: release
+  cancel-in-progress: false
 
-  check:
-    name: Check version and run tests
+jobs:
+  version:
+    name: Check the version
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Version matches manifest and changelog, and isn't released yet
+      - name: Version matches manifest and changelog, and is newer than every release
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          echo "$VERSION" | grep -Eq '^0\.[0-9]+\.[0-9]+(b[0-9]+)?$' || { echo "$VERSION isn't a version"; exit 1; }
+          echo "$VERSION" | grep -Eq '^0\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(b[1-9][0-9]*)?$' || { echo "$VERSION isn't a version"; exit 1; }
           domain=$(basename custom_components/*/)
           manifest=$(jq -r .version "custom_components/$domain/manifest.json")
           test "$manifest" = "$VERSION" || { echo "manifest.json is $manifest, not $VERSION"; exit 1; }
           grep -q "^## $VERSION (" CHANGELOG.md || { echo "CHANGELOG.md has no $VERSION entry"; exit 1; }
-          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then echo "v$VERSION already exists"; exit 1; fi
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.14"
-      - run: pip install uv
-      - run: uv pip install --system pytest-homeassistant -r requirements_test.txt
-      - run: pytest -q
+          git tag --list 'v*' | python3 -c '
+          import re, sys
+          def key(v):
+              m = re.fullmatch(r"v?0\.(\d+)\.(\d+)(?:b(\d+))?", v.strip())
+              return (int(m[1]), int(m[2]), int(m[3]) if m[3] else float("inf")) if m else None
+          new = key(sys.argv[1])
+          old = [k for k in map(key, sys.stdin) if k is not None]
+          if old and new <= max(old):
+              sys.exit(f"{sys.argv[1]} isn'"'"'t newer than every earlier release")
+          ' "$VERSION"
+
+  standard:
+    name: Standard (release check, including the audit report)
+    needs: version
+{% endraw %}    uses: jasonaward/ha-integration-standards/.github/workflows/check.yml@{{ _copier_conf.vcs_ref_hash }}{% raw %}
+    with:
+      release: true
+
+  tests:
+    name: Tests
+    needs: version
+    uses: ./.github/workflows/tests.yml
+
+  validate:
+    name: Validate
+    needs: version
+    uses: ./.github/workflows/validate.yml
 
   release:
-    needs: [standard, check]
+    needs: [standard, tests, validate]
     runs-on: ubuntu-latest
+    # Repository settings limit this environment to the default branch (6.2.3).
+    environment: release
     permissions:
       contents: write
       id-token: write
