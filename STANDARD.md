@@ -139,7 +139,8 @@ they don't cover.
    - Code that exists only for versions older than the latest is kept small, says in a
      comment which versions it's for, and runs in the tests on the minimum version. Code
      that runs on only some versions is marked `# pragma: no cover` with those versions,
-     and nothing else is excluded from coverage. So coverage never measures that code:
+     and nothing else is excluded from coverage except `if TYPE_CHECKING:` blocks, which
+     never run. So coverage never measures that code:
      the tests on each version run it, and the audit checks it.
    - Raising it is a MINOR version with an **Action needed:** note.
 
