@@ -8,8 +8,8 @@ description: Use when working on a jasonaward Home Assistant integration that ha
 **These projects aim for enterprise quality but remain hobby projects: offered as is, to
 be used at your own risk.**
 
-A public, opt-in standard for jasonaward's hobby Home Assistant integrations: projects by
-a long-time software developer turned engineering leader, built to learn when and how
+A public, opt-in standard for jasonaward's hobby Home Assistant integrations: projects
+by a long-time software developer turned engineering leader, built to learn when and how
 AI-assisted and AI-written code can be applied well, held to the bar of large-scale and
 critical systems, and shared as custom repositories (Home Assistant's Marketplace from
 2026.11, HACS before) with no warranty. It covers what users and contributors see, not
@@ -39,7 +39,8 @@ Every rule is a must unless marked _should_.
 5. Never put real personal data in code, tests, docs, examples or commits. No traffic
    recordings or instructions for intercepting a vendor's app.
 6. Commits: the maintainer's noreply address only; no co-author lines, session links or
-   other email addresses in commit messages. Contributors' and bots' commits keep theirs.
+   other email addresses in commit messages. Contributors' and bots' commits keep
+   theirs.
 7. Public text describes aims and process, not guarantees ("designed to", "aims for"),
    unless a test checks the statement.
 
@@ -49,46 +50,46 @@ Every rule is a must unless marked _should_.
   `docs-conditions`), each `done`, `todo` or `exempt`, with a comment for `todo` and
   `exempt`; `exempt` only under the rule's own exception; a rule a third-party library
   blocks stays `todo` (a blocked Gold rule blocks releases, not betas). Floor Gold for
-  releases (betas may have `todo`); _should_ Platinum. Custom-integration equivalents: `brands` = the `brand/` folder;
-  `strict-typing` = `mypy --strict` in CI; documentation pages = README sections;
-  `test-coverage` = the CI coverage gate.
-- README follows Home Assistant's integration page structure and style guide, adapted for
-  GitHub (section 5).
+  releases (betas may have `todo`); _should_ Platinum. Custom-integration equivalents:
+  `brands` = the `brand/` folder; `strict-typing` = `mypy --strict` in CI; documentation
+  pages = README sections; `test-coverage` = the CI coverage gate.
+- README follows Home Assistant's integration page structure and style guide, adapted
+  for GitHub (section 5).
 - Manifest: `codeowners` `@jasonaward`; documentation and issue links to
   `github.com/jasonaward/ha-<domain>`; `requirements` pinned with `==`; `loggers` naming
   the requirements' loggers (Home Assistant's definition).
 - Marketplace and HACS (same catalog, `hacs.json` and layout): public repository with a
-  description, issues on, topics (`home-assistant`, `hacs`, `home-assistant-integration`,
-  the product); GitHub releases; `hacs.json` with `name`, `homeassistant` (the minimum),
-  `zip_release`, `<domain>.zip` and `hide_default_branch: true` (no `render_readme`);
-  _should_ manifest `categories`. The domain is never a built-in integration's (a test
-  checks it).
-- Brand images in `custom_components/<domain>/brand/` (shown from Home Assistant 2026.3):
-  `icon.png` 256×256, `icon@2x.png` 512×512, and the standard's `dark_` versions; never Home Assistant's or another company's marks; SVG
-  sources in `docs/brand/`. _Should_: logos, one flat style, logo text in Inter.
+  description, issues on, topics (`home-assistant`, `hacs`,
+  `home-assistant-integration`, the product); GitHub releases; `hacs.json` with `name`,
+  `homeassistant` (the minimum), `zip_release`, `<domain>.zip` and `hide_default_branch:
+  true` (no `render_readme`); _should_ manifest `categories`. The domain is never a
+  built-in integration's (a test checks it).
+- Brand images in `custom_components/<domain>/brand/` (shown from Home Assistant
+  2026.3): `icon.png` 256×256, `icon@2x.png` 512×512, and the standard's `dark_`
+  versions; never Home Assistant's or another company's marks; SVG sources in
+  `docs/brand/`. _Should_: logos, one flat style, logo text in Inter.
 - Translations: a complete `translations/en.json`; no `strings.json` (Home Assistant
   doesn't use it for custom integrations).
 - No polling-interval option (`appropriate-polling`): the project fixes the interval;
   users who want fewer reads turn off polling and use an automation with **Update
   entity**, and requested reads still respect the minimum time between reads.
-- CI: tests with Home Assistant's own `pytest-homeassistant` on the latest stable release
-  (and, _should_, weekly on the latest beta); on the minimum version, with the retired
-  `pytest-homeassistant-custom-component` build if the minimum is before 2026.11, helpers
-  imported through `tests/ha_test.py`; above 95% line coverage in every module, on the
-  minimum and the latest version, excluding only version code marked
-  `# pragma: no cover` (so never measured; the tests on each version run it); an autouse fixture failing tests when Home Assistant reports a
-  deprecated use by the project's code (frame helper or a deprecated constant's
-  logger), from setup to teardown, and `DeprecationWarning`s from its code as errors; ruff (with security
-  rules), `mypy --strict`, hassfest, HACS validation, CodeQL, the standard's check. CI
-  tools pinned in `requirements_ci.txt` and test needs in `requirements_test.txt`,
-  never a package Home Assistant or its test package pins. The README claims only the
-  versions CI tested.
+- CI: tests with Home Assistant's own `pytest-homeassistant` on the latest stable
+  release (and, _should_, weekly on the latest beta); on the minimum version, with the
+  retired `pytest-homeassistant-custom-component` build if the minimum is before
+  2026.11, helpers imported through `tests/ha_test.py`; above 95% line coverage in every
+  module, on the minimum and the latest version, excluding only version code marked `#
+  pragma: no cover` (so never measured; the tests on each version run it); an autouse
+  fixture failing tests when Home Assistant reports a deprecated use by the project's
+  code (frame helper or a deprecated constant's logger), from setup to teardown, and
+  `DeprecationWarning`s from its code as errors; ruff (with security rules), `mypy
+  --strict`, hassfest, HACS validation, CodeQL, the standard's check. CI tools pinned in
+  `requirements_ci.txt` and test needs in `requirements_test.txt`, never a package Home
+  Assistant or its test package pins. The README claims only the versions CI tested.
 - Minimum Home Assistant version (`hacs.json` and Prerequisites): 2026.3.0 or later,
-  tested at exactly that version;
-  chosen for reach and upkeep, _should_ be no older than about 12 months and not under 3 months old unless a
-  needed feature requires it (check Home Assistant's analytics); code for older versions
-  kept small, labeled with the versions it's for, and tested; raising it is a MINOR with
-  **Action needed:**.
+  tested at exactly that version; chosen for reach and upkeep, _should_ be no older than
+  about 12 months and not under 3 months old unless a needed feature requires it (check
+  Home Assistant's analytics); code for older versions kept small, labeled with the
+  versions it's for, and tested; raising it is a MINOR with **Action needed:**.
 
 ## Identity (section 3)
 
@@ -100,18 +101,18 @@ commits use GitHub's noreply address, with no co-author lines; the only public e
 ## Versions, changelog, releases (section 4)
 
 - SemVer in PEP 440 form: `0.4.2`, beta `0.4.2b1`, tag `v0.4.2b1` (the Marketplace and
-  HACS ignore the `v`). No hyphens, alphas,
-  release candidates, dev or local versions. Work in progress: stay at `0.x`, no `1.0.0`.
+  HACS ignore the `v`). No hyphens, alphas, release candidates, dev or local versions.
+  Work in progress: stay at `0.x`, no `1.0.0`.
 - MINOR: feature, entity, option, device, raised minimum Home Assistant, or anything
   users must act on (**Action needed:**). PATCH: fixes, wording, docs.
 - First release `0.1.0b1`; betas raise `bN`; a good beta is released without the suffix.
-  Manifest version and changelog heading match; tag adds `v`. A version is published when
-  its tag exists, and is never reused, changed or lowered.
+  Manifest version and changelog heading match; tag adds `v`. A version is published
+  when its tag exists, and is never reused, changed or lowered.
 - Changelog: newest first, `## 0.1.0b1 (2026-11-19, beta)`, bullets only, each starting
   with the bold name of the thing it affects; an **Action needed:** bullet comes first
   (it's shown as the update's release notes).
-- Releases: started by the maintainer from the Actions tab, on the default branch, one at
-  a time, with a version newer than every earlier tag; CI runs every test job, lint,
+- Releases: started by the maintainer from the Actions tab, on the default branch, one
+  at a time, with a version newer than every earlier tag; CI runs every test job, lint,
   types, coverage, hassfest, HACS validation and the standard's release check, then, in
   the protected `release` environment, builds and attests the zip and creates the tag
   and the release, with that version's changelog section as notes; betas marked
@@ -138,24 +139,24 @@ Order: title and introduction (with a link to the manufacturer's or service's we
 notices (hobby project aiming for enterprise quality, use at your own risk, work in
 progress; unofficial, with how it connects: the vendor's service the way its app does,
 or its public interface, or nothing for a local device, and "is a trademark" for a
-single trademark; no warranty or liability);
-Use cases; Supported devices (Tested, Likely to work, not tested) and Unsupported
-devices; Prerequisites; Installation (between `<!-- ha-marketplace:exclude-start -->` and
-`<!-- ha-marketplace:exclude-end -->`: Marketplace or HACS, with the two My Home Assistant
-buttons and steps for both, then Manual); Configuration; Configuration options;
-Supported functionality; Triggers, Conditions, Actions if any (a `###` per item); Examples;
-Data updates; Load on <service>, for `cloud_*` integrations (fixed read interval, minimum
-time between reads, how to read less often); Security and privacy; Safety if any; Known limitations; Troubleshooting
-(`### Symptom: ...` with cause and fix, then diagnostics and logs, ending Reporting a
-problem); Removing the integration; Development (starting with the how-it's-made
-statement); Acknowledgments if any; License and disclaimer. Troubleshooting and Likely to
-work link CONTRIBUTING's Reporting guide. Standard text for the notices, the how-it's-made
-statement, the install buttons and the license section is in STANDARD.md 5.2, 5.6, 5.7
-and 5.8. Style: Home Assistant's guide (American English, serial comma, sentence case,
-bold UI with `>` between steps, "select", `-` lists, no "e.g.", "i.e." or "etc."); for
-GitHub, no Liquid tags, and bold leads in the notices, security bullets, license and
-changelog. The how-it's-made statement says "All of the maintainer's code" and "an
-independent audit".
+single trademark; no warranty or liability); Use cases; Supported devices (Tested,
+Likely to work, not tested) and Unsupported devices; Prerequisites; Installation
+(between `<!-- ha-marketplace:exclude-start -->` and `<!-- ha-marketplace:exclude-end
+-->`: Marketplace or HACS, with the two My Home Assistant buttons and steps for both,
+then Manual); Configuration; Configuration options; Supported functionality; Triggers,
+Conditions, Actions if any (a `###` per item); Examples; Data updates; Load on
+<service>, for `cloud_*` integrations (fixed read interval, minimum time between reads,
+how to read less often); Security and privacy; Safety if any; Known limitations;
+Troubleshooting (`### Symptom: ...` with cause and fix, then diagnostics and logs,
+ending Reporting a problem); Removing the integration; Development (starting with the
+how-it's-made statement); Acknowledgments if any; License and disclaimer.
+Troubleshooting and Likely to work link CONTRIBUTING's Reporting guide. Standard text
+for the notices, the how-it's-made statement, the install buttons and the license
+section is in STANDARD.md 5.2, 5.6, 5.7 and 5.8. Style: Home Assistant's guide (American
+English, serial comma, sentence case, bold UI with `>` between steps, "select", `-`
+lists, no "e.g.", "i.e." or "etc."); for GitHub, no Liquid tags, and bold leads in the
+notices, security bullets, license and changelog. The how-it's-made statement says "All
+of the maintainer's code" and "an independent audit".
 
 ## Beyond Home Assistant's rules (section 6)
 
@@ -164,7 +165,8 @@ independent audit".
   four), serials, MACs, Wi-Fi names, owner names, locations; allowlist where possible.
 - Logs: never secrets at any level (tested); IDs shortened; no emails.
 - Repository and history: no real personal data; earlier private history never pushed;
-  `.gitignore` excludes diagnostics downloads, traffic recordings, logs and secrets files.
+  `.gitignore` excludes diagnostics downloads, traffic recordings, logs and secrets
+  files.
 - Security: `SECURITY.md` and private reporting on; fixed vulnerabilities published as
   GitHub security advisories; actions pinned to SHAs and kept current by Dependabot;
   read-only workflow permissions; CodeQL, Dependabot alerts, secret scanning with push
@@ -173,13 +175,13 @@ independent audit".
   to its release tag and the HACS action (no current tag) to a dated commit, refreshed
   before each release; `standard.yml` and `release.yml` pin the same commit of the
   standard; requirements pinned exactly.
-- Client libraries (6.4): code that talks to a device or service lives in `py<name>`, its
-  own public repository, Apache 2.0, no Home Assistant imports, async with the caller's
-  `aiohttp` session, fully typed (`py.typed`), its own changelog and tests, released to
-  PyPI by CI with trusted publishing (a `pypi` environment) and attestations, as an sdist
-  and a wheel with the license in its metadata; the integration pins it with `==`
-  and lists its logger; a library change is released before the integration that needs
-  it.
+- Client libraries (6.4): code that talks to a device or service lives in `py<name>`,
+  its own public repository, Apache 2.0, no Home Assistant imports, async with the
+  caller's `aiohttp` session, fully typed (`py.typed`), its own changelog and tests,
+  released to PyPI by CI with trusted publishing (a `pypi` environment) and
+  attestations, as an sdist and a wheel with the license in its metadata; the
+  integration pins it with `==` and lists its logger; a library change is released
+  before the integration that needs it.
 - Vendors: use only what the vendor's app already uses publicly; never vendor secret
   keys or bypassed protections; respond promptly to objections and stop publishing if
   asked; _should_ enforce a minimum time between requests whatever users or automations
@@ -198,8 +200,8 @@ independent audit".
 `CONTRIBUTING.md` (Reporting section: bugs, new or untested models and what to test,
 security privately; AI-assisted contributions welcome if disclosed, same review),
 `.github/pull_request_template.md`, `.github/dependabot.yml`, `hacs.json`,
-`.github/ISSUE_TEMPLATE/` (bug form with a "new or untested model" checkbox, blank issues
-off), `.github/workflows/` (`tests.yml`, `validate.yml`, `codeql.yml`, `standard.yml`,
-`release.yml`), `requirements_test.txt` and `requirements_ci.txt` (pinned),
-`docs/audits/`, `docs/brand/`, `.gitignore`, `.standard-version` (the same version as the
-commit `standard.yml` pins; the two change together).
+`.github/ISSUE_TEMPLATE/` (bug form with a "new or untested model" checkbox, blank
+issues off), `.github/workflows/` (`tests.yml`, `validate.yml`, `codeql.yml`,
+`standard.yml`, `release.yml`), `requirements_test.txt` and `requirements_ci.txt`
+(pinned), `docs/audits/`, `docs/brand/`, `.gitignore`, `.standard-version` (the same
+version as the commit `standard.yml` pins; the two change together).
