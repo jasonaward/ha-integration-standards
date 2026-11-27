@@ -194,6 +194,35 @@ def _pattern(text: str, fill: dict[str, str]) -> re.Pattern[str]:
     return re.compile(".+?".join(re.escape(part) for part in parts))
 
 
+def _variants(text: str) -> list[str]:
+    """Standard text with its allowed forms (5.2): a single trademark, no connection."""
+    forms = [text]
+    if "are trademarks" in text:
+        forms.append(text.replace("are trademarks", "is a trademark"))
+    if re.search(r"<How it\s+connects>", text):
+        forms += [re.sub(r"<How it\s+connects>\s+", "", form) for form in forms]
+    return forms
+
+
+def standard_sections() -> list[str]:
+    """Each section of the standard to audit: its numbered subsections, or the section."""
+    text = STANDARD.read_text(encoding="utf-8")
+    subsections = re.findall(r"^### (\d+\.\d+) ", text, re.MULTILINE)
+    sections = []
+    for number in re.findall(r"^## (\d+)\. ", text, re.MULTILINE):
+        inside = [s for s in subsections if s.split(".")[0] == number]
+        sections += inside or [number]
+    return sections
+
+
+def _section_named(number: str, report: str) -> bool:
+    """True if a line of the report starts with the section's number, as a verdict does."""
+    pattern = rf"(?m)^[\s>|#*-]*{re.escape(number)}(?:\.\d+)*(?![\d])(?!\.\d)"
+    if "." not in number:
+        pattern = rf"(?m)^[\s>|#*-]*{re.escape(number)}(?:\.\d+)*\b"
+    return re.search(pattern, report) is not None
+
+
 def standard_blocks() -> dict[str, list[str]]:
     """The standard text of each subsection of STANDARD.md, split into paragraphs."""
     text = STANDARD.read_text(encoding="utf-8")
@@ -562,6 +591,14 @@ def check_readme(p: Project) -> None:
                 where,
                 f"'## {section}' should start with " + ", ".join(f"'### {s}'" for s in subs),
             )
+    marked = re.search(
+        r"<!-- ha-marketplace:exclude-start -->\s*\n## Installation\n.*?"
+        r"<!-- ha-marketplace:exclude-end -->\s*\n## ",
+        text,
+        re.DOTALL,
+    )
+    if not marked:
+        r.error(where, "'## Installation' isn't between the ha-marketplace:exclude markers (5.7)")
     likely = re.search(
         r"### Likely to work, not tested\n(.*?)(?=^#|\Z)",
         sections.get("Supported devices", ""),
@@ -595,7 +632,7 @@ def check_readme(p: Project) -> None:
         if index >= len(paragraphs):
             r.error("STANDARD.md", f"standard text {section} not found")
             return
-        if _pattern(paragraphs[index], fill).search(body):
+        if any(_pattern(text, fill).search(body) for text in _variants(paragraphs[index])):
             return
         if alternative and alternative in body:
             return
@@ -765,10 +802,7 @@ def check_tests(p: Project) -> None:
     if not tests:
         p.report.error("tests", "no tests")
     elif not (
-        "autouse=True" in conftest
-        and "caplog" in conftest
-        and "deprecated" in conftest
-        and "used from {DOMAIN}" in conftest
+        "autouse=True" in conftest and "deprecated" in conftest and "used from {DOMAIN}" in conftest
     ):
         p.report.error(
             "tests/conftest.py",
@@ -847,9 +881,17 @@ def check_release(p: Project) -> None:
                 p.report.error(name, f"no '{label}' line in the header")
         if not re.search(rf"^Version: {re.escape(p.version)}\s*$", text, re.MULTILINE):
             p.report.error(name, f"doesn't say it audits {p.version}")
-        missing = [rule for names in QUALITY_SCALE.values() for rule in names if rule not in text]
+        missing = [
+            rule
+            for names in QUALITY_SCALE.values()
+            for rule in names
+            if not re.search(rf"(?<![\w-]){re.escape(rule)}(?![\w-])", text)
+        ]
         if missing:
             p.report.error(name, f"no verdict for {len(missing)} rule(s), such as {missing[0]}")
+        sections = [s for s in standard_sections() if not _section_named(s, text)]
+        if sections:
+            p.report.error(name, f"no verdict for section(s) {', '.join(sections)} (4.3.4)")
     readme = p.read("README.md") or ""
     if re.search(r"\bTODO\b", readme):
         p.report.error("README.md", "a release can't have TODO left (4.3.4)")
@@ -872,8 +914,16 @@ def check_repository(p: Project, files: list[Path]) -> None:
     for workflow in sorted(p.path(".github/workflows").glob("*.y*ml")):
         where = str(workflow.relative_to(p.root))
         content = workflow.read_text(encoding="utf-8")
-        if not re.search(r"^permissions:", content, re.MULTILINE):
+        top = re.search(r"^permissions:[ \t]*(\S.*)?\n((?:[ \t]+.*\n)*)", content, re.MULTILINE)
+        if top is None:
             r.error(where, "needs top-level permissions (contents: read)")
+        else:
+            inline, block = (top[1] or "").split("#")[0].strip(), top[2]
+            granted = re.findall(r"^\s+[\w-]+:\s*(\w+)", block, re.MULTILINE)
+            if inline not in ("", "{}", "read-all") or any(
+                g not in ("read", "none") for g in granted
+            ):
+                r.error(where, "top-level permissions must be read-only (6.2.2)")
         for use in re.findall(r"^\s*-?\s*uses:\s*([^\s#]+)", content, re.MULTILINE):
             if use.startswith(("./", "docker://")):
                 continue
@@ -885,6 +935,15 @@ def check_repository(p: Project, files: list[Path]) -> None:
             ".github/workflows",
             "no scheduled run (weekly against the latest beta, 2.6)",
         )
+    pins = {
+        name: re.findall(
+            r"ha-integration-standards/\.github/workflows/check\.yml@([0-9a-f]{40})", text
+        )
+        for name in ("standard.yml", "release.yml")
+        if (text := p.read(f".github/workflows/{name}") or "")
+    }
+    if len({sha for found in pins.values() for sha in found}) > 1:
+        r.error(".github/workflows", "standard.yml and release.yml pin different commits (8.3)")
     standard = p.read(".github/workflows/standard.yml") or ""
     if standard and "ha-integration-standards/.github/workflows/check.yml@" not in standard:
         r.error(".github/workflows/standard.yml", "doesn't run the standard's shared check")

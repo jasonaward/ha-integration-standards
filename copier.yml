@@ -98,6 +98,11 @@ public_email:
   help: The public email for the code of conduct and security reports
 
 # Worked out from the answers; not asked.
+are_trademarks:
+  type: str
+  default: "{% if ' and ' in trademarks or ',' in trademarks %}are trademarks{% else %}is a trademark{% endif %}"
+  when: false
+
 cloud:
   type: bool
   default: "{{ iot_class.startswith('cloud_') }}"

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import struct
 import subprocess
@@ -311,7 +312,8 @@ def _audit_report(version: str = "0.1.0b1", rules: list[str] | None = None) -> s
         f"# Audit of {version}\n\nVersion: {version}\nStandard: 0.2.0\nDate: 2026-11-26\n"
         "Reviewer: an AI agent without the author's context\nContext: the repository only\n\n"
     )
-    return header + "".join(f"- {rule}: done. Evidence.\n" for rule in rules)
+    sections = "".join(f"- **{s}**: met.\n" for s in check_standard.standard_sections())
+    return header + "".join(f"- {rule}: done. Evidence.\n" for rule in rules) + sections
 
 
 def _no_todo(project: Path) -> None:
@@ -339,6 +341,14 @@ def test_audit_report_needs_its_header_and_every_rule(project):
     report.write_text(_audit_report(version="0.1.0b0"))
     errors = check_standard.run(project, release=True).errors
     assert any("doesn't say it audits 0.1.0b1" in e for e in errors), errors
+    # A rule name inside a longer one doesn't count: "devices" isn't "stale-devices".
+    everything = _audit_report()
+    report.write_text(everything.replace("- devices: done", "- gadgets: done"))
+    errors = check_standard.run(project, release=True).errors
+    assert any("such as devices" in e for e in errors), errors
+    report.write_text(everything.replace("- **5.2**: met.", ""))
+    errors = check_standard.run(project, release=True).errors
+    assert any("section(s) 5.2 " in e for e in errors), errors
 
 
 def test_release_has_no_todo(project):
@@ -478,3 +488,43 @@ def test_command_line(vendor):
     )
     assert result.returncode == 0, result.stdout
     assert "0 error(s)" in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("iot_class", "interface"),
+    [("local_push", "app"), ("cloud_polling", "app"), ("cloud_polling", "public")],
+)
+def test_one_word_trademark(tmp_path, iot_class, interface):
+    """5.2: "BulbCo is a trademark", with or without a connection sentence."""
+    answers = {
+        **VENDOR,
+        "company": "BulbCo",
+        "trademarks": "BulbCo",
+        "iot_class": iot_class,
+        "service_interface": interface,
+    }
+    project = _make(tmp_path, answers)
+    assert _errors(project) == []
+    assert "BulbCo is a trademark of BulbCo" in (project / "README.md").read_text()
+
+
+def test_workflow_permissions_must_be_read_only(project):
+    _edit(
+        project,
+        ".github/workflows/codeql.yml",
+        "permissions:\n  contents: read",
+        "permissions: write-all",
+    )
+    assert any("must be read-only" in e for e in _errors(project))
+
+
+def test_installation_needs_the_marketplace_markers(project):
+    _edit(project, "README.md", "<!-- ha-marketplace:exclude-start -->\n", "")
+    assert any("exclude markers" in e for e in _errors(project))
+
+
+def test_both_workflows_pin_the_same_standard(project):
+    text = (project / ".github/workflows/release.yml").read_text()
+    sha = re.search(r"check\.yml@([0-9a-f]{40})", text)[1]
+    _edit(project, ".github/workflows/release.yml", sha, "0" * 40)
+    assert any("pin different commits" in e for e in _errors(project))

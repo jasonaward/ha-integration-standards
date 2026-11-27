@@ -44,8 +44,8 @@ jobs:
 {% endraw %}          # The minimum version. pytest-homeassistant exists from 2026.11; for an earlier
           # minimum, the retired pytest-homeassistant-custom-component build for it is used,
           # which brings its own pytest-cov, so requirements_ci.txt isn't installed with it.
-          - name: minimum supported ({{ min_mm }})
-            packages: {% if min_new %}pytest-homeassistant=={{ min_mm }}.* -r requirements_test.txt -r requirements_ci.txt{% else %}homeassistant=={{ min_mm }}.* pytest-homeassistant-custom-component -r requirements_test.txt{% endif %}{% raw %}
+          - name: minimum supported ({{ minimum_ha }})
+            packages: {% if min_new %}pytest-homeassistant=={{ minimum_ha }} -r requirements_test.txt -r requirements_ci.txt{% else %}homeassistant=={{ minimum_ha }} pytest-homeassistant-custom-component -r requirements_test.txt{% endif %}{% raw %}
             prerelease: disallow
             coverage: true
             types: false

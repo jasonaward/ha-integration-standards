@@ -2,30 +2,50 @@
 
 from __future__ import annotations
 
+import logging
+
 import pytest
 
 from custom_components.{{ domain }}.const import DOMAIN
 
 
-@pytest.fixture(autouse=True)
-def no_deprecated_use(caplog):
-    """Fail any test in which Home Assistant reports a deprecated use by this integration.
+class _DeprecationReports(logging.Handler):
+    """Collects Home Assistant's reports of a deprecated use by this integration.
 
     Home Assistant reports one through its frame helper ("custom integration '<domain>'"),
     or, for a deprecated constant, function or alias, through the logger of the module that
     has it ("... was used from <domain>").
     """
-    yield
-    reports = []
-    for record in caplog.get_records("call"):
+
+    def __init__(self) -> None:
+        super().__init__(logging.DEBUG)
+        self.reports: list[str] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
         message = record.getMessage()
         frame = (
             record.name == "homeassistant.helpers.frame" and f"integration '{DOMAIN}'" in message
         )
         deprecated = "deprecated" in message.lower() and f"used from {DOMAIN}" in message
         if frame or deprecated:
-            reports.append(message)
-    assert not reports, reports
+            self.reports.append(message)
+
+
+@pytest.fixture(autouse=True)
+def no_deprecated_use():
+    """Fail any test in which Home Assistant reports a deprecated use by this integration.
+
+    Listens from the start of the test's setup to the end of its teardown, so setup
+    fixtures and unloading count too.
+    """
+    handler = _DeprecationReports()
+    root = logging.getLogger()
+    root.addHandler(handler)
+    try:
+        yield
+    finally:
+        root.removeHandler(handler)
+    assert not handler.reports, handler.reports
 
 
 @pytest.fixture(autouse=True)

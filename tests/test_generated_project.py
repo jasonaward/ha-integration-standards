@@ -65,3 +65,57 @@ def test_deprecated_constant_fails_the_tests(generated, tmp_path):
     result = _pytest(project)
     assert result.returncode != 0, result.stdout[-3000:]
     assert "ATTR_VIA_DEVICE" in result.stdout
+
+
+def test_deprecated_use_in_a_setup_fixture_fails_the_tests(generated, tmp_path):
+    """Setting up in a fixture (setup phase) is caught too, not only the test's call."""
+    import shutil
+
+    project = tmp_path / "copy"
+    shutil.copytree(generated, project)
+    init = project / "custom_components/acme_heater/__init__.py"
+    text = init.read_text()
+    marker = "async def async_setup_entry("
+    init.write_text(
+        text.replace(
+            marker,
+            "async def _use_deprecated() -> None:\n"
+            "    from homeassistant import const\n\n"
+            "    const.ATTR_VIA_DEVICE  # deprecated in Home Assistant 2026.x\n\n\n" + marker,
+        ).replace(
+            "    entry.runtime_data",
+            "    await _use_deprecated()\n    entry.runtime_data",
+            1,
+        )
+    )
+    (project / "tests/test_in_fixture.py").write_text(
+        "import pytest\n"
+        "from homeassistant.config_entries import SOURCE_USER\n"
+        "from custom_components.acme_heater.const import DOMAIN\n\n\n"
+        "@pytest.fixture\n"
+        "async def setup_integration(hass):\n"
+        "    result = await hass.config_entries.flow.async_init(\n"
+        "        DOMAIN, context={'source': SOURCE_USER}\n"
+        "    )\n"
+        "    await hass.config_entries.flow.async_configure(result['flow_id'], {})\n"
+        "    await hass.async_block_till_done()\n\n\n"
+        "async def test_nothing_here(hass, setup_integration):\n"
+        "    assert hass.config_entries.async_entries(DOMAIN)\n"
+    )
+    result = subprocess.run(
+        [
+            str(HA_PYTHON),
+            "-m",
+            "pytest",
+            "-q",
+            "-p",
+            "no:cacheprovider",
+            "tests/test_in_fixture.py",
+        ],
+        cwd=project,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0, result.stdout[-3000:]
+    assert "ATTR_VIA_DEVICE" in result.stdout

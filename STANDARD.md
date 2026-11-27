@@ -59,7 +59,8 @@ they don't cover.
    third-party library the project doesn't control prevents stays `todo`, and the
    comment names the library.
    - Floor: **Gold** for a release (a version without `b`); betas may have rules marked
-     `todo`. _Should_: **Platinum**.
+     `todo`. _Should_: **Platinum**. A Gold rule that a third-party library prevents
+     blocks releases until the library is fixed or replaced; betas can still ship.
    - Home Assistant gives custom integrations no tier and calls the rules
      [a good guide](https://contributors.home-assistant.io/core/quality-scale/tiers/#custom) for them. A few rules name a
      mechanism that only an integration in Home Assistant itself has; for those, the
@@ -138,7 +139,8 @@ they don't cover.
    - Code that exists only for versions older than the latest is kept small, says in a
      comment which versions it's for, and runs in the tests on the minimum version. Code
      that runs on only some versions is marked `# pragma: no cover` with those versions,
-     and nothing else is excluded from coverage.
+     and nothing else is excluded from coverage. So coverage never measures that code:
+     the tests on each version run it, and the audit checks it.
    - Raising it is a MINOR version with an **Action needed:** note.
 
 ## 3. Identity and naming
@@ -216,17 +218,24 @@ update's release notes.
 2. Betas are marked **pre-release**. The Marketplace offers them only to users who
    choose one under **Install another version** or turn on pre-releases for the
    repository, with **Include pre-releases** in the menu on the repository's own page or
-   the **Pre-release** switch of its device; it then offers a pre-release only while
+   the **Pre-release** switch of its device, an entity that's disabled by default
+   ([`marketplace/switch.py`](https://github.com/home-assistant/core/blob/2026.11.3/homeassistant/components/marketplace/switch.py)
+   in Home Assistant 2026.11.3); it then offers a pre-release only while
    it's newer than the latest regular release
    ([releases guide](https://contributors.home-assistant.io/marketplace/guides/releases/),
    [Home Assistant frontend 20261028.8](https://github.com/home-assistant/frontend/blob/20261028.8/src/panels/marketplace/components/ha-marketplace-repository-overflow-menu.ts),
    which Home Assistant 2026.11.3 uses). HACS offers them only to users who turn on the
-   repository's pre-release switch.
-3. **A broken release** is fixed by a newer one as soon as possible. Until then, the
-   changelog marks the broken version and says how to go back: in the Marketplace,
-   restore a backup taken before the update, which its install dialog recommends as "the
-   safer way", or choose the previous version under **Install another version** (both
-   from the same frontend); in HACS, **Redownload** and pick the previous version.
+   repository's pre-release switch, also disabled by default
+   ([HACS switch entities](https://hacs.xyz/docs/use/entities/switch)).
+3. **A broken release** is fixed by a newer one as soon as possible. Users who added the
+   repository from a link may see the fix only up to 48 hours later, when the
+   Marketplace next checks GitHub
+   ([releases guide](https://contributors.home-assistant.io/marketplace/guides/releases/)).
+   Until then, the changelog marks the broken version and says how to go back: in the
+   Marketplace, restore a backup taken before the update, which its install dialog
+   recommends as "the safer way", or choose the previous version under **Install another
+   version** (both from the same frontend); in HACS, **Redownload** and pick the previous
+   version ([HACS updates](https://hacs.xyz/docs/use/update)).
 4. **An audit before every release**, betas included. A reviewer independent of the
    author (a person, or an AI agent working without the author's context) checks the
    project against every quality-scale rule and every rule of this standard, each against
@@ -303,7 +312,8 @@ than a separate page.
 Under the introduction, as a quote block. The unofficial notice is left out for the
 maintainer's own products. In it, `<How it connects>` is one of the two sentences
 below for an integration that uses the company's service (`iot_class` starting with
-`cloud_`), and is left out for a device reached only on the local network.
+`cloud_`), and is left out for a device reached only on the local network. For a single
+trademark, "are trademarks" becomes "is a trademark".
 
 > _Standard text_
 >
@@ -507,8 +517,8 @@ source. Examples use made-up values only.
    it's published as a GitHub security advisory and noted in the changelog.
 2. Workflow actions are pinned to full commit SHAs, kept current by Dependabot version
    updates for actions and Python dependencies. An action with no current release tag
-   (hassfest, the HACS action) is pinned to a branch commit with its date in a comment,
-   and refreshed by hand before each release. Workflows have read-only permissions by
+   (the HACS action, whose last tag is from 2022) is pinned to a branch commit with its
+   date in a comment, and refreshed by hand before each release. Workflows have read-only permissions by
    default, with each job asking only for what it needs.
 3. Repository settings: CodeQL scanning, Dependabot alerts, and secret scanning with push
    protection are on. `main` is protected: no force pushes or deletion, and pull requests
@@ -644,7 +654,9 @@ Code adapted from other projects must have a compatible license and be credited 
   (`src/translations/en.json` and `src/panels/marketplace/`, release 20261028.8).
 - GitHub: [the `job` context of reusable workflows](https://github.blog/changelog/2026-09-03-github-actions-early-september-2026-updates).
 - HACS: [publishing requirements](https://hacs.xyz/docs/publish/start),
-  [My Home Assistant links](https://hacs.xyz/docs/use/my/).
+  [My Home Assistant links](https://hacs.xyz/docs/use/my/),
+  [switch entities](https://hacs.xyz/docs/use/entities/switch),
+  [updates](https://hacs.xyz/docs/use/update).
 - PyPI: [trusted publishing](https://docs.pypi.org/trusted-publishers/).
 - Home Assistant [analytics](https://analytics.home-assistant.io/), for the share of
   installations on each version.

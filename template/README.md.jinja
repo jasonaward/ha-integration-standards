@@ -20,7 +20,7 @@
 > changes it. You're responsible for your use of your own account under {{ company }}'s
 > terms of service.
 {%- endif %}
-> {{ trademarks }} are trademarks of {{ company }}, used here only to say which {{ device }}
+> {{ trademarks }} {{ are_trademarks }} of {{ company }}, used here only to say which {{ device }}
 > this works with.
 >
 {%- endif %}
@@ -88,9 +88,10 @@ only get once you've asked for them:
 
 - **Marketplace**: on this repository's page, select the three dots menu > **Install
   another version** and choose the beta. To get later betas as updates, select
-  **Include pre-releases** in the same menu, or turn on the **Pre-release** switch of the
-  repository's device. The Marketplace then offers a pre-release while it's newer than
-  the latest regular release.
+  **Include pre-releases** in the same menu, or enable and turn on the **Pre-release**
+  switch of the repository's device. The Marketplace then offers a pre-release while
+  it's newer than the latest regular release. If you added the repository from a link,
+  updates can take up to 48 hours to show.
 - **HACS**: turn on the repository's pre-release switch (an entity of its device in HACS,
   disabled by default).
 
@@ -130,7 +131,7 @@ TODO: how often it reads, what triggers a read, and what users see when the
 
 TODO: how often it reads (a fixed interval: Home Assistant doesn't let users set it),
 the minimum time between reads however many are requested, how to read less often
-(turn off **Enable polling** in the integration's system options and use an automation
+(turn off **Enable polling for changes** in the integration's system options and use an automation
 with **Update entity**), what happens on errors, and limits on any heavier requests.
 {% endif %}
 ## Security and privacy
@@ -234,6 +235,6 @@ using or being unable to use this software, even if advised of the possibility o
 damage. See sections 7 and 8 of the license.
 {%- if company %}
 
-{{ trademarks }} are trademarks of {{ company }}. This project is not affiliated with,
+{{ trademarks }} {{ are_trademarks }} of {{ company }}. This project is not affiliated with,
 endorsed by, or supported by {{ company }}. Don't contact {{ company }} support about it.
 {%- endif %}

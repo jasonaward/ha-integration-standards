@@ -43,9 +43,10 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           BASE: ${{ github.base_ref }}
+        # fetch-depth: 0 already brought the base branch; no second fetch, which would
+        # need credentials in a private repository.
         run: |
-          git fetch --no-tags --depth=1 origin "refs/heads/$BASE:refs/remotes/origin/base"
-          old="$(git show origin/base:.standard-version 2>/dev/null | tr -d '[:space:]' || true)"
+          old="$(git show "origin/$BASE:.standard-version" 2>/dev/null | tr -d '[:space:]' || true)"
           new="$(tr -d '[:space:]' < .standard-version)"
           if [ -n "$old" ] && [ "$(printf '%s\n%s\n' "$old" "$new" | sort -V | tail -1)" != "$new" ]; then
             echo "::error::.standard-version goes from $old down to $new"; exit 1

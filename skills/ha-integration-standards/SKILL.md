@@ -48,8 +48,8 @@ Every rule is a must unless marked _should_.
 - `quality_scale.yaml`: all 54 rules (November 2026, including `docs-triggers` and
   `docs-conditions`), each `done`, `todo` or `exempt`, with a comment for `todo` and
   `exempt`; `exempt` only under the rule's own exception; a rule a third-party library
-  blocks stays `todo`. Floor Gold for releases (betas may have `todo`); _should_
-  Platinum. Custom-integration equivalents: `brands` = the `brand/` folder;
+  blocks stays `todo` (a blocked Gold rule blocks releases, not betas). Floor Gold for
+  releases (betas may have `todo`); _should_ Platinum. Custom-integration equivalents: `brands` = the `brand/` folder;
   `strict-typing` = `mypy --strict` in CI; documentation pages = README sections;
   `test-coverage` = the CI coverage gate.
 - README follows Home Assistant's integration page structure and style guide, adapted for
@@ -76,14 +76,15 @@ Every rule is a must unless marked _should_.
   `pytest-homeassistant-custom-component` build if the minimum is before 2026.11, helpers
   imported through `tests/ha_test.py`; above 95% line coverage in every module, on the
   minimum and the latest version, excluding only version code marked
-  `# pragma: no cover`; an autouse fixture failing tests when Home Assistant reports a
+  `# pragma: no cover` (so never measured; the tests on each version run it); an autouse fixture failing tests when Home Assistant reports a
   deprecated use by the project's code (frame helper or a deprecated constant's
-  logger), and `DeprecationWarning`s from its code as errors; ruff (with security
+  logger), from setup to teardown, and `DeprecationWarning`s from its code as errors; ruff (with security
   rules), `mypy --strict`, hassfest, HACS validation, CodeQL, the standard's check. CI
   tools pinned in `requirements_ci.txt` and test needs in `requirements_test.txt`,
   never a package Home Assistant or its test package pins. The README claims only the
   versions CI tested.
-- Minimum Home Assistant version (`hacs.json` and Prerequisites): 2026.3.0 or later;
+- Minimum Home Assistant version (`hacs.json` and Prerequisites): 2026.3.0 or later,
+  tested at exactly that version;
   chosen for reach and upkeep, _should_ be no older than about 12 months and not under 3 months old unless a
   needed feature requires it (check Home Assistant's analytics); code for older versions
   kept small, labeled with the versions it's for, and tested; raising it is a MINOR with
@@ -118,12 +119,15 @@ commits use GitHub's noreply address, with no co-author lines; the only public e
   of the author checks every quality-scale rule and every rule of the standard against
   their current text, with evidence; the report is `docs/audits/<version>.md`, starting
   with `Version:`, `Standard:`, `Date:`, `Reviewer:` and `Context:` lines and giving a
-  verdict for every rule by name. A release's README has no `TODO`.
+  verdict for every rule by name and for every section of the standard. A release's
+  README has no `TODO`.
 - Betas reach Marketplace users who pick one under **Install another version**, or turn
   on pre-releases for the repository (**Include pre-releases** in the menu on the
   repository's own page, or the **Pre-release** switch of its device), and then only
   while newer than the latest regular release; HACS users through the repository's
-  pre-release switch. A broken release: fix forward fast; the changelog says how to go
+  pre-release switch. Both switches are disabled entities until enabled. Users who added
+  a repository from a link get updates up to 48 hours late. A broken release: fix
+  forward fast; the changelog says how to go
   back (Marketplace: restore a backup, "the safer way" in its dialog, or **Install
   another version**; HACS: **Redownload**). A retired project says so in its README and
   is archived.
@@ -133,7 +137,8 @@ commits use GitHub's noreply address, with no co-author lines; the only public e
 Order: title and introduction (with a link to the manufacturer's or service's website);
 notices (hobby project aiming for enterprise quality, use at your own risk, work in
 progress; unofficial, with how it connects: the vendor's service the way its app does,
-or its public interface, or nothing for a local device; no warranty or liability);
+or its public interface, or nothing for a local device, and "is a trademark" for a
+single trademark; no warranty or liability);
 Use cases; Supported devices (Tested, Likely to work, not tested) and Unsupported
 devices; Prerequisites; Installation (between `<!-- ha-marketplace:exclude-start -->` and
 `<!-- ha-marketplace:exclude-end -->`: Marketplace or HACS, with the two My Home Assistant
@@ -164,8 +169,10 @@ independent audit".
   GitHub security advisories; actions pinned to SHAs and kept current by Dependabot;
   read-only workflow permissions; CodeQL, Dependabot alerts, secret scanning with push
   protection; `main` protected with required checks; `v*` tags protected, releases
-  immutable, a `release` environment; hassfest and the HACS action pinned to dated
-  commits, refreshed before each release; requirements pinned exactly.
+  immutable, a `release` environment; workflows read-only by default; hassfest pinned
+  to its release tag and the HACS action (no current tag) to a dated commit, refreshed
+  before each release; `standard.yml` and `release.yml` pin the same commit of the
+  standard; requirements pinned exactly.
 - Client libraries (6.4): code that talks to a device or service lives in `py<name>`, its
   own public repository, Apache 2.0, no Home Assistant imports, async with the caller's
   `aiohttp` session, fully typed (`py.typed`), its own changelog and tests, released to

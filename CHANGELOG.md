@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (2026-11-26)
+## 0.2.0 (2026-11-27)
 
 - **Action needed:** projects made with 0.1.0 update to the rules below: move client code
   into a library on PyPI, drop `strings.json` and any polling-interval option, set the
@@ -66,6 +66,14 @@
 - **Published means tagged**: a version, of a project or of this standard, is published
   when its tag exists, and can't change after that.
 - **Device pages** show only identifiers known to be right.
+- **Third audit**: a one-word trademark passes ("is a trademark"), with or without a
+  connection sentence; the deprecation fixture listens from setup to teardown; the
+  pull-request version check works in private repositories; hassfest is pinned to its
+  release tag; the minimum-version job tests the exact minimum; build provenance uses
+  `actions/attest`; the check requires read-only workflow permissions, the Marketplace
+  markers, the same standard commit in both workflows, and an audit verdict for every
+  rule by whole name and every section; UI wording sourced for both pre-release
+  switches and the 48-hour updates of repositories added from a link.
 - **Shared check** (`check/check_standard.py`) and a reusable workflow that runs it in
   each project's CI, from the same commit as the workflow, covering the maintainer's
   commits on the branch and, when releasing, the audit report. A pull request can't
