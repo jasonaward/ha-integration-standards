@@ -61,9 +61,9 @@ Every rule is a must unless marked _should_.
 - Marketplace and HACS (same catalog, `hacs.json` and layout): public repository with a
   description, issues on, topics (`home-assistant`, `hacs`,
   `home-assistant-integration`, the product); GitHub releases; `hacs.json` with `name`,
-  `homeassistant` (the minimum), `zip_release`, `<domain>.zip` and `hide_default_branch:
-  true` (no `render_readme`); _should_ manifest `categories`. The domain is never a
-  built-in integration's (a test checks it).
+  `homeassistant` (the minimum), `zip_release`, `<domain>.zip` and
+  `hide_default_branch: true` (no `render_readme`); _should_ manifest `categories`. The
+  domain is never a built-in integration's (a test checks it).
 - Brand images in `custom_components/<domain>/brand/` (shown from Home Assistant
   2026.3): `icon.png` 256×256, `icon@2x.png` 512×512, and the standard's `dark_`
   versions; never Home Assistant's or another company's marks; SVG sources in
@@ -77,14 +77,15 @@ Every rule is a must unless marked _should_.
   release (and, _should_, weekly on the latest beta); on the minimum version, with the
   retired `pytest-homeassistant-custom-component` build if the minimum is before
   2026.11, helpers imported through `tests/ha_test.py`; above 95% line coverage in every
-  module, on the minimum and the latest version, excluding only version code marked `#
-  pragma: no cover` (so never measured; the tests on each version run it); an autouse
+  module, on the minimum and the latest version, excluding only version code marked
+  `# pragma: no cover` (so never measured; the tests on each version run it); an autouse
   fixture failing tests when Home Assistant reports a deprecated use by the project's
   code (frame helper or a deprecated constant's logger), from setup to teardown, and
-  `DeprecationWarning`s from its code as errors; ruff (with security rules), `mypy
-  --strict`, hassfest, HACS validation, CodeQL, the standard's check. CI tools pinned in
-  `requirements_ci.txt` and test needs in `requirements_test.txt`, never a package Home
-  Assistant or its test package pins. The README claims only the versions CI tested.
+  `DeprecationWarning`s from its code as errors; ruff (with security rules),
+  `mypy --strict`, hassfest, HACS validation, CodeQL, the standard's check. CI tools
+  pinned in `requirements_ci.txt` and test needs in `requirements_test.txt`, never a
+  package Home Assistant or its test package pins. The README claims only the versions CI
+  tested.
 - Minimum Home Assistant version (`hacs.json` and Prerequisites): 2026.3.0 or later,
   tested at exactly that version; chosen for reach and upkeep, _should_ be no older than
   about 12 months and not under 3 months old unless a needed feature requires it (check
@@ -128,10 +129,9 @@ commits use GitHub's noreply address, with no co-author lines; the only public e
   while newer than the latest regular release; HACS users through the repository's
   pre-release switch. Both switches are disabled entities until enabled. Users who added
   a repository from a link get updates up to 48 hours late. A broken release: fix
-  forward fast; the changelog says how to go
-  back (Marketplace: restore a backup, "the safer way" in its dialog, or **Install
-  another version**; HACS: **Redownload**). A retired project says so in its README and
-  is archived.
+  forward fast; the changelog says how to go back (Marketplace: restore a backup, "the
+  safer way" in its dialog, or **Install another version**; HACS: **Redownload**). A
+  retired project says so in its README and is archived.
 
 ## README (section 5)
 
@@ -141,8 +141,9 @@ progress; unofficial, with how it connects: the vendor's service the way its app
 or its public interface, or nothing for a local device, and "is a trademark" for a
 single trademark; no warranty or liability); Use cases; Supported devices (Tested,
 Likely to work, not tested) and Unsupported devices; Prerequisites; Installation
-(between `<!-- ha-marketplace:exclude-start -->` and `<!-- ha-marketplace:exclude-end
--->`: Marketplace or HACS, with the two My Home Assistant buttons and steps for both,
+(between `<!-- ha-marketplace:exclude-start -->` and
+`<!-- ha-marketplace:exclude-end -->`: Marketplace or HACS, with the two My Home
+Assistant buttons and steps for both,
 then Manual); Configuration; Configuration options; Supported functionality; Triggers,
 Conditions, Actions if any (a `###` per item); Examples; Data updates; Load on
 <service>, for `cloud_*` integrations (fixed read interval, minimum time between reads,
